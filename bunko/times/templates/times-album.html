@@ -1,0 +1,32 @@
+{% extends 'base_forms.html' %}
+
+{% block titulo %}Add Photo to Archive{% endblock %}
+
+{% block contenido %}
+<article>
+
+  {% for m in medias %}
+
+  <div style="text-align: center;">
+ 
+  <img src="{{m.imagen.url}}" style="width: 100%; border:1px solid grey; float:left;'"></img>
+  <span style="color:grey;">{{m.title}}</span>
+  <div style="clear:both;"></div>
+
+
+ </div>
+ <hr>
+<div style="clear:both;"></div>
+{% endfor %}
+<div style="width:100%; text-align:center;">
+<a href="{% url 'mediapage' next_p %}"><button>Next Page</button></a>
+
+</article>
+
+<br>
+<br>
+
+
+
+
+{% endblock%}
