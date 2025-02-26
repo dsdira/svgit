@@ -18,12 +18,12 @@
   	<br>
   	<article class="blog-post">
 		<h4>{{this_wiki.title}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_wiki.wtype.category|capfirst}} | {{this_wiki.updated_at|date:"M d, Y"}}</small></h4>
-        
+
         {% if this_wiki.mainPic %}<img src="{{this_wiki.mainPic}}" style="border:1px solid grey; float:left; width:40%; margin-right: 16px; margin-bottom: 16px;">{% endif %}
         {% if creditos %}
 		{{this_wiki.headtext|safe|linebreaks}}
 		{% else %}
-		
+
 		{{this_wiki.cleantext|safe|linebreaks}}
 
 		{% endif %}
@@ -111,7 +111,7 @@
 	  <br>
 	  <div class="form-group">
 	    <label for="exampleFormControlTextarea1">Content</label>
-	    <textarea name = "info" class="form-control" id="exampleFormControlTextarea1" rows="3">{{this_wiki.info}}</textarea>
+	    <textarea name = "info" class="form-control" id="exampleFormControlTextarea1" rows="20">{{this_wiki.info}}</textarea>
 	  </div>
 	  <br>
 	  <input type="hidden" name="wikiid" value="{{this_wiki.id}}">

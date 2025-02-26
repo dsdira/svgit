@@ -189,6 +189,7 @@
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Admin
               </a>
+
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <li><a class="dropdown-item" href="{% url 'addwiki' %}">Add Item</a></li>
                 <li><a class="dropdown-item" href="{% url 'addbook' %}">Add Book</a></li>
@@ -198,6 +199,9 @@
                 <li><a class="dropdown-item" href="{% url 'addtimesmedia' %}">Add Media</a></li>
               </ul>
             </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{% url 'cuadernos' %}">Notebooks</a>
+              </li>
              <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 History
@@ -205,7 +209,7 @@
 
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <li><a class="dropdown-item" href="{% url 'books' 1 %}">Books</a></li>
-                <li><a class="dropdown-item" href="{% url 'bunko' %}">Bunko</a></li>
+                <li><a class="dropdown-item" href="{% url 'bunko' 1 %}">Bunko</a></li>
                 <li><a class="dropdown-item" href="{% url 'movies' 1 %}">Movies</a></li>
                 <li><a class="dropdown-item" href="{% url 'shows' %}">Shows</a></li>
                 <li><a class="dropdown-item" href="{% url 'journal' 1 %}">Journal</a></li>

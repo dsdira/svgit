@@ -10,7 +10,7 @@
 	  <ul class="list-group" reversed>
         {% for a in posts %}
           <li class="list-group-item">
-          	<span style="color:grey;"><i>{{a.updated_at|date:"N j"}} #{{a.id}}</i></span><br>
+          	<span style="color:grey;"><i>{{a.updated_at|date:"N j"}}</span> <a href="{% url 'wiki' a.id %}" style='color:white;' onmouseover="this.style.color='blue';" onmouseout="this.style.color='white';">#{{a.id}}</a></i><br>
             {{a.cleantext|safe}}
           </li>
         {% endfor %}

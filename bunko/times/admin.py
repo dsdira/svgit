@@ -32,6 +32,8 @@ admin.site.register(BookQuote)
 admin.site.register(MoveListItem)
 admin.site.register(MovieList)
 admin.site.register(WikiPhoto)
+admin.site.register(Cuaderno)
+admin.site.register(Apunte)
 
 
 

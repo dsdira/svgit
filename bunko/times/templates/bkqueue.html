@@ -1,35 +1,25 @@
-{% extends 'base_mono.html' %}
-{% load static %}
+{% extends 'base_forms.html' %}
 
-{% block titulo %}The Times | Bunko Queue{% endblock %}
+{% block titulo %}Book Lists{% endblock %}
 
 {% block contenido %}
+<article>
+	<h4>Bunko Queue</h4>
 
-
-
-<script src="{% static 'js/masonry.pkgd.min.js' %}" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
-
-
-    
-    <div class="row" data-masonry='{"percentPosition": true }'>
-
-        {% for r in rqueue %}
-        <div class="col-sm-6 col-lg-6 mb-4">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title"><a href='{% url "book" r.id  %}' style="text-decoration: none;">{{r.titulo}}</a>
-                    <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{r.wtype.category|capfirst}} | {{r.authors_links|safe}}</small></h5>
-                  <p class="card-text">{{r.headtext}}</p>
-                </div>
-              </div>
-               </div>
+	   <ul class="list-group">
+        {% for l in rqueue %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'book' l.id %}" style="color:black; text-decoration: none;"> {{l.titulo}}</a>
+                    
+          </li>
         {% endfor %}
-      </div>
-
- 
+      </ul>
 
 
 
+</article>
+
+<br>
 
 
 {% endblock%}

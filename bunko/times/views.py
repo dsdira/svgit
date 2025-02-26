@@ -113,8 +113,8 @@ def homepage(request):
 	nlist = 16
 	npics = Wiki.objects.all().count()
 	npages = math.ceil(npics/nlist)
-	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8]).exclude(id=42).order_by('-updated_at')[0:nlist]
-	pinned_posts = Wiki.objects.filter(id=42)
+	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8]).exclude(id=180).order_by('-updated_at')[0:nlist]
+	pinned_posts = Wiki.objects.filter(id=180)
 	on_reading = ProgressBar.objects.filter(avance__lt=F('cantidad'))
 	now_watching = SeasonProgressBar.objects.filter(avance__lt=F('temporada__episodes'))
 
@@ -195,12 +195,20 @@ def bqueue(request):
 
 	return render(request,'bqueue.html',{'rhist':rhist,'rqueue':rqueue})
 
-def bunko(request):
+def bunko(request,y):
 
+	max_year = Consumo.objects.order_by('-finish_d').first()
+
+	if int(y)==1:
+		y = max_year.finish_d.strftime('%Y')
+
+	conteo = Consumo.objects.filter(volume__wtype__id__in=[10,11,12]).count()
+	anhos = Consumo.objects.filter(volume__wtype__id__in=[10,11,12]).values('finish_d__year').annotate(qbooks=Count('id')).order_by('-finish_d__year')
 	rqueue = Book.objects.filter(consumo__volume__isnull=True, wtype__id__in=[10,11,12]).order_by('pub_year')
-	rhist = Consumo.objects.filter(volume__wtype__id__in=[10,11,12]).order_by('-finish_d')
+	rhist = Consumo.objects.filter(volume__wtype__id__in=[10,11,12],finish_d__year=int(y)).order_by('-finish_d','-id')
 
-	return render(request,'bunko.html',{'rhist':rhist,'rqueue':rqueue})
+	return render(request,'bunko.html',{'rhist':rhist,'rqueue':rqueue,'anhos':anhos,'anho':y,'conteo':conteo})
+
 
 def bkqueue(request):
 
@@ -594,7 +602,7 @@ def mediastats(request):
 			    left join times_season c
 			    on b.temporada_id = c.id
 			where
-			    a.fecha >= '2024-10-01'
+			    a.fecha >= '2025-01-01'
 			group by
 			    strftime('%Y',date(a.fecha,'weekday 0')),
 			    1*strftime('%m',date(a.fecha,'weekday 0'))-1,
@@ -1083,9 +1091,59 @@ def addwikiphoto(request):
 	conteo_photos = PageRels.objects.filter(child=this_wiki).count()
 
 	if conteo_photos == 0:
-		return redirect('/wiki/{}'.format(this_wiki.id))
+	    return redirect('/wiki/{}'.format(this_wiki.id))
 	else:
-		pagina = PageRels.objects.filter(child=this_wiki).latest('id')
-		return redirect('/itemcol/{}/{}'.format(this_wiki.id,pagina.page.id))
+	    pagina = PageRels.objects.filter(child=this_wiki).latest('id')
+	    return redirect('/itemcol/{}/{}'.format(this_wiki.id,pagina.page.id))
+
+def cuadernos(request):
+	notebooks = Cuaderno.objects.all().order_by('titulo')
+	return render(request,'cuadernos.html',{'notebooks':notebooks})
+
+def addcuaderno(request):
+	this_titulo = request.POST.get("titulo")
+	newN = Cuaderno.objects.create(titulo = this_titulo)
+	newN.save()
+
+
+	return redirect('/cuadernos')
+
+def cuaderno(request,c):
+	this_notebook = Cuaderno.objects.get(pk=int(c))
+	this_apuntes = Apunte.objects.filter(cuaderno = this_notebook).order_by('id')
+
+	return render(request,'cuaderno.html',{'this_notebook':this_notebook,'this_apuntes':this_apuntes})
+
+
+def addapunte(request):
+	cuaderno = Cuaderno.objects.get(pk=int(request.POST.get("cid")))
+	subtitulo = request.POST.get("subtitulo")
+	contenido = request.POST.get("entrada")
+
+	if len(subtitulo)>2:
+		newApunte = Apunte.objects.create(cuaderno=cuaderno,contenido=contenido,subtitulo=subtitulo)
+	else:
+		newApunte = Apunte.objects.create(cuaderno=cuaderno,contenido=contenido)
+
+
+	return redirect('/cuaderno/{}'.format(cuaderno.id))
+
+def editapunte(request,aid):
+	apunte = Apunte.objects.get(pk=int(aid))
+	if request.method == 'POST':
+		apunte = Apunte.objects.get(pk=int(request.POST.get("aid")))
+		subtitulo = request.POST.get("subtitulo")
+		contenido = request.POST.get("entrada")
+
+		Apunte.objects.filter(id=apunte.id).update(contenido=contenido,subtitulo=subtitulo)
+		return redirect('/cuaderno/{}'.format(apunte.cuaderno.id))
+	else:
+		return render(request,'edit-apunte.html',{'apunte':apunte})
+	
+def nbtokindle(request, c):
+	this_notebook = Cuaderno.objects.get(pk=int(c))
+	this_apuntes = Apunte.objects.filter(cuaderno = this_notebook).order_by('id')
+
+	return render(request,'printed_notebook.html',{'this_notebook':this_notebook,'this_apuntes':this_apuntes})
 
 

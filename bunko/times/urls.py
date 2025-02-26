@@ -14,7 +14,7 @@ urlpatterns = [
 	path('book/<bookid>', views.book, name='book'),
 	path('books/<y>', views.books, name='books'),
 	path('bqueue/', views.bqueue, name='bqueue'),
-	path('bunko/', views.bunko, name='bunko'),
+	path('bunko/<y>', views.bunko, name='bunko'),
 	path('bkqueue/', views.bkqueue, name='bkqueue'),
 	path('readbook/', views.readbook, name='readbook'),
 	path('appendwiki/', views.appendwiki, name='appendwiki'),
@@ -67,4 +67,11 @@ urlpatterns = [
 	path('movielist/<id_lista>', views.movielist, name='movielist'),
 
 	path('addwikiphoto/', views.addwikiphoto, name='addwikiphoto'),
+	path('cuadernos/', views.cuadernos, name='cuadernos'),
+	path('addcuaderno/', views.addcuaderno, name='addcuaderno'),
+	path('cuaderno/<c>', views.cuaderno, name='cuaderno'),
+	path('printed-nb/<c>', views.nbtokindle, name='printedNB'),
+	path('addapunte/', views.addapunte, name='addapunte'),
+	path('editapunte/<aid>', views.editapunte, name='editapunte'),
+	
 	]
