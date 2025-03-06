@@ -1146,4 +1146,509 @@ def nbtokindle(request, c):
 
 	return render(request,'printed_notebook.html',{'this_notebook':this_notebook,'this_apuntes':this_apuntes})
 
+def addPartido(request,lid):
+    liga = Liga.objects.get(pk=lid)
+    equipos = LigaTeams.objects.filter(ligaRel__id=liga.id,flagActivo=True).order_by('equipoRel__nombre')
+    last_matches = Partido.objects.filter(liga=liga).order_by('-id')[0:10]
+    ligas = Liga.objects.all().order_by('-id')
 
+    if request.method == 'POST':
+        id_el = request.POST.get("local")
+        id_ev = request.POST.get("visit")
+        fecha = request.POST.get("fecha")
+        fase = request.POST.get("fase")
+
+        el = Equipo.objects.get(pk=int(id_el))
+        ev = Equipo.objects.get(pk=int(id_ev))
+
+        newM = Partido.objects.create(fecha=fecha,liga=liga,local=el,visita=ev,terminado=False,fase=fase)
+        newM.save()
+        last_mr = Partido.objects.latest('id')
+
+        return render(request,'add-partido.html',{'liga':liga,'equipos':equipos,'last_m':last_mr,'lm':last_matches,'ligas':ligas})
+    else:
+        last_mr = Partido.objects.latest('id')
+        return render(request,'add-partido.html',{'liga':liga,'equipos':equipos,'last_m':last_mr,'lm':last_matches,'ligas':ligas})
+
+def addSoccerTeam(request):
+    if request.method == 'POST':
+        newT = Equipo.objects.create(nombre=request.POST.get("nombre"),pais=request.POST.get("pais"),logo=request.FILES.get("logo"))
+        newT.save()
+
+        return render(request,'add-soccer-team.html',{})
+    else:
+        return render(request,'add-soccer-team.html',{})
+
+
+def sccteam(request,t):
+    import datetime
+    thisEquipo = Equipo.objects.get(pk=t)
+    ligas = Liga.objects.all().order_by('-id')
+    matches = Partido.objects.filter(Q(visita__id=int(t)) | Q(local__id=int(t))).exclude(terminado=False).order_by('-fecha')[0:10]
+    contratos = Contrato.objects.filter(equ__id=int(t),active=True).order_by('number')
+    fec_hoy = datetime.date.today()
+    thisY = fec_hoy.strftime("%Y")
+    antY = int(thisY)-1
+    goal_table = Goles.objects.raw("select 1 as id, jugador,jugador_id, sum(case when anho='{}' then goles else 0 end) goles, sum(case when anho='{}' then goles else 0 end) goles_ant from futbol_scoreres where equipo_id={} group by jugador,jugador_id order by sum(case when anho='{}' then goles else 0 end) desc".format(int(thisY),antY,thisEquipo.id,int(thisY)))
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+    listado2 = []
+    for l in listado:
+        conteo = Contrato.objects.filter(equ__id=int(t),active=True,position=l).count()
+        if conteo > 0:
+            listado2.append(l)
+    return render(request,'sccteam.html',{'matches':matches,'ligas':ligas,'thisEquipo':thisEquipo,'contratos':contratos,'listado':listado2,'posiciones':listado,'goal_table':goal_table,'thisY':thisY})
+
+
+def viewMatch(request,pid):
+
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+
+    ligas = Liga.objects.all().order_by('-id')
+
+
+
+    partido = Partido.objects.get(pk=pid)
+    comentarios = PartidoComment.objects.filter(comm_partido__id=partido.id).order_by('-minuto','-id')
+    lig = partido.liga.id
+    matches = Partido.objects.filter(terminado=False,liga__id=lig,fecha__gte=partido.fecha).exclude(id=pid).order_by('fecha','id')[0:20]
+
+    jugadores_local = Contrato.objects.filter(equ__id=partido.local.id,active=True).order_by('jug__nombre')
+    jugadores_visit = Contrato.objects.filter(equ__id=partido.visita.id,active=True).order_by('jug__nombre')
+
+    lgoles = Goles.objects.filter(partido__id=pid,asignado=1,penales=False).order_by('minuto','adicional')
+    vgoles = Goles.objects.filter(partido__id=pid,asignado=2,penales=False).order_by('minuto','adicional')
+
+    lpens = Penales.objects.filter(partido__id=pid,asignado=1).order_by('id')
+    vpens = Penales.objects.filter(partido__id=pid,asignado=2).order_by('id')
+
+    if request.method == 'POST':
+
+        cid = request.POST.get("contrato")
+        minuto = request.POST.get("minuto")
+        adicional = request.POST.get("adicional")
+        ct = Contrato.objects.get(pk=cid)
+        asig = request.POST.get("asignado")
+
+        if request.POST.get("penal","0")=="0":
+            pn = False
+        else:
+            pn = True
+
+        if request.POST.get("autogol","0")=="0":
+            og = False
+        else:
+            if asig=="1":
+                asig="2"
+            else:
+                asig="1"
+
+            og = True
+
+        newG = Goles.objects.create(partido=partido,asignado=asig,contrato=ct,minuto=minuto,adicional=adicional,penal=pn,penales=False,og=og)
+        newG.save()
+
+        return render(request,'partido.html',{'matches':matches,'partido':partido,'jlocal':jugadores_local,'jvisit':jugadores_visit,'lgoles':lgoles,'vgoles':vgoles,'lpens':lpens,'vpens':vpens,'ligas':ligas,'listado':listado,'comentarios':comentarios})
+
+    else:
+        return render(request,'partido.html',{'matches':matches,'partido':partido,'jlocal':jugadores_local,'jvisit':jugadores_visit,'lgoles':lgoles,'vgoles':vgoles,'lpens':lpens,'vpens':vpens,'ligas':ligas,'listado':listado,'comentarios':comentarios})
+
+def closeMatch(request,pid):
+    partido = Partido.objects.get(pk=pid)
+    partido.terminado = True
+    partido.save()
+    return redirect("/viewmatch/{}".format(pid))
+
+
+def viewLiga(request,sta,lig):
+    match_stat = sta
+
+    ligas = Liga.objects.all().order_by('-id')
+    liga = Liga.objects.get(pk=lig)
+
+    if sta == "1":
+        titulo = "Coming Fixtures"
+        ot = "Finished"
+        iot = "/viewliga/2/"+str(lig)
+        matches = Partido.objects.filter(terminado=False,liga__id=int(lig)).order_by('fecha')[0:30]
+        nmatches = Partido.objects.filter(terminado=False,liga__id=int(lig)).order_by('fecha').count()
+    elif sta=="2":
+        titulo = "Finished Fixtures"
+        ot = "Coming"
+        iot = "/viewliga/1/"+str(lig)
+        matches = Partido.objects.filter(terminado=True,liga__id=int(lig)).order_by('-fecha')
+
+    if sta=="1" and nmatches==0:
+        return redirect("/viewliga/2/{}".format(liga.id))
+    else:
+        return render(request,'view-liga.html',{'matches':matches,'ligas':ligas,'ptitulo':titulo,'ot':ot,'iot':iot,'lig':liga})
+
+def editPartido(request,pid):
+    thisMatch = Partido.objects.get(pk=int(pid))
+    equipos = LigaTeams.objects.filter(ligaRel__id=thisMatch.liga.id,flagActivo=True).order_by('equipoRel__nombre')
+    thisliga = Liga.objects.get(pk=thisMatch.liga.id)
+
+    if request.method == 'POST':
+        id_el = request.POST.get("local")
+        id_ev = request.POST.get("visit")
+        fecha = request.POST.get("fecha")
+        fase = request.POST.get("fase")
+
+        el = Equipo.objects.get(pk=int(id_el))
+        ev = Equipo.objects.get(pk=int(id_ev))
+
+        Partido.objects.filter(id=thisMatch.id).update(fecha=fecha,liga=thisliga,local=el,visita=ev,terminado=False,fase=fase)
+        return redirect('/viewmatch/{}'.format(thisMatch.id))
+    else:
+        return render(request,'edit-partido.html',{'thisMatch':thisMatch,'equipos':equipos})
+
+
+
+def addNewPlayerGoal(request,t,m,a):
+    equipo = Equipo.objects.get(pk=int(t))
+    partido = Partido.objects.get(pk=int(m))
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+    asig = a
+    if request.method=='POST':
+
+        conteo_prev = Jugador.objects.filter(nombre=request.POST.get("nombre")).count()
+        if conteo_prev == 0:
+
+            nombre = request.POST.get("nombre")
+            pais = request.POST.get("pais")
+            position = request.POST.get("position")
+            number = request.POST.get("number")
+
+            newJugador = Jugador.objects.create(nombre=nombre,pais=pais, biographics="This section nees to be expanded.")
+            newJugador.save()
+
+            newC = Contrato.objects.create(jug=newJugador,equ=equipo,active=True, position=position,number = number)
+            newC.save()
+
+            minuto = request.POST.get("minuto")
+            adicional = request.POST.get("adicional")
+
+            if request.POST.get("penal","0")=="0":
+                pn = False
+            else:
+                pn = True
+
+            if request.POST.get("autogol","0")=="0":
+                og = False
+            else:
+                if asig=="1":
+                    asig="2"
+                else:
+                    asig="1"
+
+                og = True
+
+            newG = Goles.objects.create(partido=partido,asignado=asig,contrato=newC,minuto=minuto,adicional=adicional,penal=pn,penales=False,og=og)
+            newG.save()
+            return(redirect('/viewmatch/{}/'.format(partido.id)))
+        else:
+            return redirect('/jugadores/')
+    else:
+        return render(request,'add-new-player-goal.html',{'equipo':equipo,'partido':partido,'listado':listado})
+
+def regPenRound(request,pid):
+    partido = Partido.objects.get(pk=pid)
+
+    asignado = request.POST.get("asignado")
+    contrato_id = request.POST.get("contrato")
+    contrato = Contrato.objects.get(pk=contrato_id)
+
+    if request.POST.get("anotado","0")=="0":
+        anotado = False
+    else:
+        anotado = True
+
+    newP = Penales.objects.create(partido=partido,asignado=asignado,contrato=contrato,anotado=anotado)
+    newP.save()
+
+    if anotado == True:
+        newG = Goles.objects.create(partido=partido,asignado=asignado,contrato=contrato,minuto=121,adicional=0,penal=False,penales=True,og=False)
+        newG.save()
+
+    return redirect('/viewmatch/{}'.format(pid))
+
+
+def addPlayerv2(request):
+    pnombre = request.POST.get("nombre","")
+    ppais = request.POST.get("pais","")
+    partido = request.POST.get("partido","0")
+
+    prev_conteo = Jugador.objects.filter(nombre=pnombre).count()
+
+    if prev_conteo == 0 and int(partido) > 0:
+        newJ = Jugador.objects.create(nombre=pnombre,pais=ppais)
+        newJ.save()
+        equ_id = request.POST.get("equipo","0")
+        equipon = Equipo.objects.get(pk=int(equ_id))
+        position = request.POST.get("position")
+        number = request.POST.get("number")
+        newC = Contrato.objects.create(jug=newJ,equ=equipon,position=position,number = number)
+        newC.save()
+        return redirect('/viewmatch/{}'.format(int(partido)))
+    elif prev_conteo == 0 and int(partido) == 0:
+        newJ = Jugador.objects.create(nombre=pnombre,pais=ppais)
+        newJ.save()
+        equ_id = request.POST.get("equipo","0")
+        equipon = Equipo.objects.get(pk=int(equ_id))
+        position = request.POST.get("position")
+        number = request.POST.get("number")
+        newC = Contrato.objects.create(jug=newJ,equ=equipon,position=position,number = number)
+        newC.save()
+        return redirect('/team/{}'.format(int(equ_id)))
+    else:
+        return redirect('/jugadores/')
+
+def addpartidocomm(request):
+    partido = request.POST.get("partido","0")
+    comm = request.POST.get("comm","")
+    minuto = request.POST.get("minuto","0")
+    obj_partido = Partido.objects.get(pk=int(partido))
+
+    newC = PartidoComment.objects.create(comm_partido=obj_partido,comm=comm,minuto=int(minuto),tipo=1)
+    #1: Comentarios
+    #2: Goal
+    newC.save()
+
+    return redirect('/viewmatch/{}'.format(partido))
+
+def addsecleg(request):
+
+    match = request.POST.get("partido","")
+    fecha = request.POST.get("fecha","")
+
+    old_match = Partido.objects.get(pk=int(match))
+
+    newP = Partido.objects.create(fecha=fecha,liga=old_match.liga,local=old_match.visita,visita=old_match.local,terminado=False,fase=old_match.fase)
+    newP.save()
+    return redirect('/viewmatch/{}'.format(newP.id))
+
+def viewsquad(request,par_id,equ_id):
+    check_squad = matchSquad.objects.filter(equipo__id=int(equ_id),partido__id=int(par_id)).count()
+
+    this_equipo = Equipo.objects.get(pk=int(equ_id))
+    this_partido = Partido.objects.get(pk=int(par_id))
+
+    if check_squad == 0:
+        new_S = matchSquad.objects.create(equipo=this_equipo,partido=this_partido)
+        new_S.save()
+        sc_id = new_S.id
+        plantilla = squadPlayers.objects.filter(squad__id=new_S.id)
+    else:
+        this_squad =  matchSquad.objects.filter(equipo__id=int(equ_id),partido__id=int(par_id)).latest('id')
+        sc_id = this_squad.id
+        plantilla = squadPlayers.objects.filter(squad__id=this_squad.id).order_by('tipo')
+
+    contratos = Contrato.objects.filter(equ__id=int(equ_id)).order_by('jug__nombre')
+
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+
+    porteros = []
+    defensas = []
+    medicampos = []
+    delanteros = []
+    not_spec = []
+
+    for p in plantilla:
+        if p.jugador.position == "Goal Keeper":
+            porteros.append(p)
+        elif p.jugador.position == "Defender":
+            defensas.append(p)
+        elif p.jugador.position == "Midfielder":
+            medicampos.append(p)
+        elif p.jugador.position == "Forward":
+            delanteros.append(p)
+        elif p.jugador.position == "Not Specified":
+            not_spec.append(p)
+
+
+    return render(request,'squad.html',{'plantilla':plantilla,
+                                        'contratos':contratos,
+                                        'partido':this_partido,
+                                        'equipo':this_equipo,
+                                        'porteros':porteros,
+                                        'defensas':defensas,
+                                        'medicampos':medicampos,
+                                        'delanteros':delanteros,
+                                        'not_spec':not_spec,
+                                        'sc_id':sc_id})
+
+def viewMatches(request,sta):
+    match_stat = sta
+
+    ligas = Liga.objects.all().order_by('-id')
+    equipos = Equipo.objects.all().order_by('nombre')
+
+    if sta == "1":
+        titulo = "Coming Fixtures"
+        ot = "Finished"
+        iot = "/viewmatches/2"
+        matches = Partido.objects.filter(terminado=False,fecha__gte='2022-12-25').order_by('fecha')[0:50]
+    elif sta=="2":
+        titulo = "Finished Fixtures"
+        ot = "Coming"
+        iot = "/viewmatches/1"
+        matches = Partido.objects.filter(terminado=True).order_by('-fecha')[0:50]
+
+    return render(request,'view-matches.html',{'matches':matches,'ligas':ligas,'ptitulo':titulo,'ot':ot,'iot':iot,'equipos':equipos})
+
+def jugadores(request):
+
+    jugadores = Jugador.objects.all().order_by('-id')
+
+    if request.method == 'POST':
+        pnombre = request.POST.get("nombre","")
+        ppais = request.POST.get("pais","")
+
+        newJ = Jugador.objects.create(nombre=pnombre,pais=ppais, biographics = "This section needs to be expanded.")
+        newJ.save()
+
+        return redirect('/jugador/{}'.format(newJ.id))
+    else:
+        return render(request,'players.html',{'jugadores':jugadores})
+
+
+def viewTable(request,liga):
+    tp = Liga.objects.raw("select 1 as id, * from position_tables where ligaid={} order by ptos desc, dg desc".format(liga))
+    tp2 = Liga.objects.raw("select 1 as id, * from fase_grups where ligaid={} order by fase, ptos desc, dg desc".format(liga))
+    tg = Goles.objects.raw("select 1 as id, * from liga_goleadores where liga={} order by goles desc, penales desc".format(liga))
+
+    matches = Partido.objects.filter(terminado=True,liga__id=int(liga)).exclude(fase__contains='Group').order_by('-fecha')
+
+    liga = Liga.objects.get(pk=int(liga))
+    ligas = Liga.objects.all().order_by('-id')
+    if ('Champions' in liga.nombre) or ('UEFA Euro' in liga.nombre) or ('Copa America' in liga.nombre):
+        tipo = 'grupos'
+    else:
+        tipo = 'liga'
+
+
+    return render(request,'viewtable.html',{'tp':tp,'thisLiga':liga,'ligas':ligas,'tablagoles':tg, 'tp2':tp2,'tipo':tipo,'partidos':matches})
+
+def unirligateams(request,liga):
+    equipos = Equipo.objects.all().order_by('nombre')
+    this_liga = Liga.objects.get(pk=int(liga))
+    if request.method == 'POST':
+        for e in equipos:
+            if e.nombre in request.POST:
+                equ = Equipo.objects.get(pk=e.id)
+                nL = LigaTeams.objects.create(ligaRel=this_liga, equipoRel = equ, flagActivo = True)
+        return redirect('/viewliga/1/{}'.format(this_liga.id))
+    else:
+        return render(request,'select_teams.html',{'equipos':equipos,'liga':this_liga})
+
+def editComm(request,commid):
+    comentario = PartidoComment.objects.get(pk=int(commid))
+    if request.method == 'POST':
+        PartidoComment.objects.filter(id=int(commid)).update(comm=request.POST.get("comm"))
+        return redirect('/viewmatch/{}'.format(comentario.comm_partido.id))
+    else:
+        return render(request,'edit-comm.html',{'comentario':comentario})
+
+def jugador(request,jid):
+    jug = Jugador.objects.get(pk=int(jid))
+    contratos = Contrato.objects.filter(jug__id=int(jid)).order_by('-id')
+    equipos = Equipo.objects.all().order_by('nombre')
+    goal_table = Goles.objects.raw("select 1 as id, liga,liga_id,equipo, sum(goles) goles, sum(cast(penales as int)) penales, sum(goles_contra) goles_contra from futbol_scoreres where jugador_id={} group by liga,liga_id,equipo order by liga_id desc".format(jug.id))
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+
+    if request.method == 'POST' and request.POST.get("team","0") != "0":
+        equ_id = request.POST.get("team","0")
+
+        equipon = Equipo.objects.get(pk=int(equ_id))
+
+        position = request.POST.get("position")
+        number = request.POST.get("number")
+
+
+        newC = Contrato.objects.create(jug=jug,equ=equipon,position=position,number = number)
+        newC.save()
+
+        return render(request,'player.html',{'jug':jug,'contratos':contratos,'equipos':equipos})
+    elif request.method == 'POST' and request.POST.get("team","0") == "0":
+        pnombre = request.POST.get("nombre","")
+        ppais = request.POST.get("pais","")
+
+        newJ = Jugador.objects.create(nombre=pnombre,pais=ppais)
+        newJ.save()
+
+        equ_id = request.POST.get("team2","0")
+
+        equipon = Equipo.objects.get(pk=int(equ_id))
+
+        position = request.POST.get("position")
+        number = request.POST.get("number")
+
+        newC = Contrato.objects.create(jug=newJ,equ=equipon,position=position,number = number)
+        newC.save()
+
+        return redirect('/jugador/{}'.format(newJ.id))
+    else:
+        return render(request,'player.html',{'jug':jug,'contratos':contratos,'equipos':equipos,'listado':listado,'goal_table':goal_table})
+
+
+def editContrato(request,c):
+    thisC = Contrato.objects.get(pk=int(c))
+    thisP = Jugador.objects.get(pk=thisC.jug.id)
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+    ngoles = Goles.objects.filter(contrato__id=thisC.id).count()
+
+    og=0
+    classGoles = None
+    pn=0
+    reg = 0
+
+    if ngoles > 0:
+        og = 0
+        pn = 0
+        reg = 0
+        goles = Goles.objects.filter(contrato__id=thisC.id)
+        classGoles = Goles.objects.filter(contrato__id=thisC.id,og=False).values('partido__liga__nombre').annotate(qgoles=Count('id'),maxfecha=Max('partido__fecha')).order_by('-maxfecha')
+        for g in goles:
+            if g.og == True:
+                og = og + 1
+            elif g.penal == True or g.penales == True:
+                pn = pn + 1
+            elif g.og == False and  g.penal== False and g.penales == False:
+                reg = reg + 1
+
+
+
+    if request.method == 'POST':
+        Jugador.objects.filter(id=thisP.id).update(nombre=request.POST.get("nombre"),pais = request.POST.get("pais"))
+
+        if request.POST.get("active"):
+            checkb = True
+        else:
+            checkb = False
+
+
+        Contrato.objects.filter(id=thisC.id).update(position= request.POST.get("position"),number= request.POST.get("number"),active=checkb)
+        return redirect('/team/{}'.format(thisC.equ.id))
+    else:
+        return render(request,'edit-contrato.html',{'thisC':thisC,'listado':listado,'ngoles':(ngoles-og),'classGoles':classGoles,'pn':pn,'og':og,'reg':reg})
+
+def updateSquad(request):
+
+    plantilla = matchSquad.objects.get(pk=int(request.POST.get("squad_id")))
+    contrato = Contrato.objects.get(pk=int(request.POST.get("contrato")))
+    tipo = request.POST.get("tipo")
+
+    newLP = squadPlayers.objects.create(squad=plantilla,jugador=contrato,tipo=tipo)
+
+
+    return redirect('/squad/{}/{}'.format(plantilla.partido.id,plantilla.equipo.id))
+
+def editBiographics(request,c):
+    thisC = Contrato.objects.get(pk=int(c))
+    thisP = Jugador.objects.get(pk=thisC.jug.id)
+    listado = ["Goal Keeper","Defender","Midfielder","Forward","Not Specified"]
+
+    if request.method == 'POST':
+        Jugador.objects.filter(id=thisP.id).update(biographics=request.POST.get("biographics"))
+        return redirect('/view-contrato/{}'.format(thisC.id))
+    else:
+        return render(request,'edit-pbio.html',{'thisC':thisC,'listado':listado})

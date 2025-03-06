@@ -34,7 +34,19 @@ admin.site.register(MovieList)
 admin.site.register(WikiPhoto)
 admin.site.register(Cuaderno)
 admin.site.register(Apunte)
-
+admin.site.register(Jugador)
+admin.site.register(Contrato)
+admin.site.register(Liga)
+admin.site.register(Goles)
+admin.site.register(Penales)
+admin.site.register(Partido)
+admin.site.register(LigaTeams)
+admin.site.register(PartidoComment)
+admin.site.register(Equipo)
+admin.site.register(mlbTeam)
+admin.site.register(mlbGame)
+admin.site.register(matchSquad)
+admin.site.register(squadPlayers)
 
 
 

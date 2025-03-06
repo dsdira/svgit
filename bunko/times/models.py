@@ -550,6 +550,187 @@ class Apunte(models.Model):
 		return self.contenido +' '+ f"<a href='/editapunte/{self.id}' style='color:gray; font-size: 0.85em;'>[ed]</a>"
 
 
+class Equipo(models.Model):
+	nombre = models.CharField(max_length=128)
+	pais = models.CharField(max_length=128)
+	logo = models.ImageField(upload_to=path_and_name, max_length=255, null=True, blank=True)
+
+	def __str__(self):
+		return self.nombre
+
+class Jugador(models.Model):
+	nombre = models.CharField(max_length=128)
+	pais = models.CharField(max_length=128)
+	biographics = models.TextField(default="This section needs to be expanded.")
+
+	def __str__(self):
+		return self.nombre
+
+class Contrato(models.Model):
+	jug = models.ForeignKey(Jugador, on_delete = models.CASCADE)
+	equ = models.ForeignKey(Equipo, on_delete = models.CASCADE)
+	active = models.BooleanField(default=True)
+	position = models.CharField(default="Not Specified", max_length=256)
+	number = models.IntegerField(default = 0)
+
+	def __str__(self):
+		return self.jug.nombre+'-'+self.equ.nombre
+
+class Liga(models.Model):
+	nombre = models.CharField(max_length=120)
+
+	def __str__(self):
+		return self.nombre
+
+
+class Partido(models.Model):
+	fecha = models.DateField()
+	liga = models.ForeignKey(Liga, on_delete = models.CASCADE)
+	local = models.ForeignKey(Equipo, on_delete = models.CASCADE,related_name="elocal")
+	visita = models.ForeignKey(Equipo, on_delete = models.CASCADE,related_name="evisita")
+	terminado = models.BooleanField(default=False, blank=True,null=True)
+	fase = models.CharField(max_length=120)
+
+	def __str__(self):
+		return self.local.nombre+' v '+self.visita.nombre
+
+	@property
+	def marcador(self):
+		nlocal = Goles.objects.filter(partido__id=self.id,asignado=1,penales=False).count()
+		nvisita = Goles.objects.filter(partido__id=self.id,asignado=2,penales=False).count()
+
+		plocal = Goles.objects.filter(partido__id=self.id,asignado=1,penales=True).count()
+		pvisita = Goles.objects.filter(partido__id=self.id,asignado=2,penales=True).count()
+
+		if (plocal+pvisita)==0:
+			score = "{} - {}".format(nlocal,nvisita)
+		else:
+			score = "{} ({})-({}) {}".format(nlocal,plocal,pvisita,nvisita)
+
+		return score
+
+	@property
+	def comms(self):
+		comentarios = PartidoComment.objects.filter(comm_partido__id=self.id)
+		txt_comms = ""
+		if comentarios:
+			for c in comentarios:
+				txt_comms = txt_comms +' '+ c.comm
+
+			return txt_comms
+		else:
+			return None
+
+
+
+
+class Goles(models.Model):
+	partido = models.ForeignKey(Partido,on_delete=models.CASCADE)
+	asignado = models.IntegerField()
+	contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE)
+	minuto = models.IntegerField()
+	adicional = models.IntegerField()
+	penal = models.BooleanField()
+	penales = models.BooleanField()
+	og = models.BooleanField(default=False)
+
+	def __str__(self):
+		return self.contrato.jug.nombre
+
+	@property
+	def descriptor(self):
+
+		if self.adicional>0:
+			add = "+"+str(self.adicional)
+		else:
+			add = ""
+
+		if self.penal:
+			p = " pen"
+		else:
+			p = ""
+
+		if self.og:
+			fog = " og"
+		else:
+			fog =""
+
+		desc = self.contrato.jug.nombre+" "+str(self.minuto)+"'"+add+p+fog
+
+		return desc
+
+class Penales(models.Model):
+	partido = models.ForeignKey(Partido,on_delete=models.CASCADE)
+	asignado = models.IntegerField()
+	contrato = models.ForeignKey(Contrato,on_delete=models.CASCADE)
+	anotado = models.BooleanField()
+
+	def __str__(self):
+		return str(self.id)
+
+	@property
+	def icon(self):
+		if self.anotado == True:
+			symbol = "&#9989;"
+		else:
+			symbol = "&#10060;"
+
+		return symbol
+
+class PartidoComment(models.Model):
+	comm_partido = models.ForeignKey(Partido,on_delete=models.CASCADE)
+	comm = models.TextField()
+	minuto  = models.IntegerField(default=0)
+	tipo = models.IntegerField(default=0)
+
+	def __str__(self):
+		return str(self.id)
+
+class LigaTeams(models.Model):
+    ligaRel = models.ForeignKey(Liga,on_delete = models.CASCADE)
+    equipoRel = models.ForeignKey(Equipo,on_delete = models.CASCADE)
+    flagActivo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.ligaRel.nombre+'-'+self.equipoRel.nombre
+
+class mlbTeam(models.Model):
+	nombre = models.CharField(max_length=200)
+	ciudad = models.CharField(max_length=200)
+	nomina = models.TextField()
+
+	def __str__(self):
+		return self.nombre
+
+
+class mlbGame(models.Model):
+	fecha = models.DateField()
+	local = models.ForeignKey(mlbTeam,on_delete=models.CASCADE, related_name='local_team')
+	visit = models.ForeignKey(mlbTeam,on_delete=models.CASCADE, related_name='visit_team')
+	local_runs = models.IntegerField()
+	visit_runa = models.IntegerField()
+	comentarios = models.TextField()
+
+	def __str__(self):
+		return str(self.id)+" | "+self.local.nombre +" v "+self.visit.nombre
+
+class matchSquad(models.Model):
+	partido = models.ForeignKey(Partido,on_delete=models.CASCADE)
+	equipo = models.ForeignKey(Equipo, on_delete=models.CASCADE)
+
+	def __str__(self):
+		return "partido: " + str(self.partido.id) + " - "+ self.equipo.nombre
+
+class squadPlayers(models.Model):
+	squad = models.ForeignKey(matchSquad,on_delete=models.CASCADE)
+	jugador = models.ForeignKey(Contrato,on_delete=models.CASCADE)
+	tipo = models.CharField(max_length=1)
+
+	def __str__(self):
+		return "partido: " + str(self.squad.partido.id) + " - "+ self.jugador.jug.nombre
+
+
+
 
 
 
