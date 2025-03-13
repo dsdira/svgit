@@ -16,7 +16,7 @@
     <h5>Goal Keepers</h5>
     <ul class="list-group" style="width:50%;">
     {%for p in porteros%}
-        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{%endif%})</li>
+        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{% elif p.tipo == '4' %}R{%endif%})</li>
     {%endfor%}
       </ul>
 {%endif%}
@@ -26,7 +26,7 @@
     <h5>Defenders</h5>
     <ul class="list-group" style="width:50%;">
     {%for p in defensas%}
-        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{%endif%})</li>
+        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{% elif p.tipo == '4' %}R{%endif%})</li>
     {%endfor%}
       </ul>
 {%endif%}
@@ -36,7 +36,7 @@
     <h5>Midfielders</h5>
     <ul class="list-group" style="width:50%;">
     {%for p in medicampos%}
-        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{%endif%})</li>
+        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{% elif p.tipo == '4' %}R{%endif%})</li>
     {%endfor%}
       </ul>
 {%endif%}
@@ -48,7 +48,7 @@
     <h5>Forwards</h5>
     <ul class="list-group" style="width:50%;">
     {%for p in delanteros %}
-        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{%endif%})</li>
+        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{% elif p.tipo == '4' %}R{%endif%})</li>
     {%endfor%}
       </ul>
 {%endif%}
@@ -59,7 +59,7 @@
     <h5>Unknown Position</h5>
     <ul class="list-group" style="width:50%;">
     {%for p in not_spec%}
-        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{%endif%})</li>
+        <li class="list-group-item">{{p.jugador.jug.nombre}} ({% if p.tipo == '1' %}90{% elif p.tipo == '2' %}S{% elif p.tipo == '3' %}E{% elif p.tipo == '4' %}R{%endif%})</li>
     {%endfor%}
       </ul>
 {%endif%}
@@ -88,6 +88,7 @@
                 <option value="1">Titular 90</option>
                 <option value="2">Titular Sale</option>
                 <option value="3">Banca Entra</option>
+                <option value="4">Expulsado</option>
           </select>
         </div>
         <input type="hidden" name="squad_id" value="{{sc_id}}">

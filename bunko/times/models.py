@@ -729,6 +729,39 @@ class squadPlayers(models.Model):
 	def __str__(self):
 		return "partido: " + str(self.squad.partido.id) + " - "+ self.jugador.jug.nombre
 
+class Cuenta(models.Model):
+	nombre = models.CharField(max_length=150)
+	tipo = models.IntegerField()
+
+	def __str__(self):
+		return self.nombre
+
+class TrxTyp(models.Model):
+	desc = models.CharField(max_length=200)
+	codigo = models.IntegerField()
+
+	def __str__(self):
+		return self.desc
+
+class Trx(models.Model):
+	fecha = models.DateField()
+	debito = models.ForeignKey(Cuenta, on_delete = models.CASCADE)
+	credito = models.ForeignKey(TrxTyp, on_delete = models.CASCADE)
+	monto = models.DecimalField(max_digits=16,decimal_places=2,default=0.00)
+	desc = models.CharField(max_length=200)
+
+	def __str__(self):
+		return self.credito.desc +'--'+ str(self.fecha)
+
+
+class Budget(models.Model):
+	cuenta = models.ForeignKey(TrxTyp,on_delete=models.CASCADE)
+	anho = models.IntegerField()
+	mes = models.IntegerField()
+	mbudget = models.DecimalField(max_digits=16,decimal_places=2,default=0.00)
+
+	def __str__(self):
+		return str(self.anho)+'-'+str(self.mes)+':'+self.cuenta.desc
 
 
 

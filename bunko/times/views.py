@@ -1139,7 +1139,7 @@ def editapunte(request,aid):
 		return redirect('/cuaderno/{}'.format(apunte.cuaderno.id))
 	else:
 		return render(request,'edit-apunte.html',{'apunte':apunte})
-	
+
 def nbtokindle(request, c):
 	this_notebook = Cuaderno.objects.get(pk=int(c))
 	this_apuntes = Apunte.objects.filter(cuaderno = this_notebook).order_by('id')
@@ -1208,7 +1208,7 @@ def viewMatch(request,pid):
 
 
     partido = Partido.objects.get(pk=pid)
-    comentarios = PartidoComment.objects.filter(comm_partido__id=partido.id).order_by('-minuto','-id')
+    comentarios = PartidoComment.objects.filter(comm_partido__id=partido.id).order_by('minuto','id')
     lig = partido.liga.id
     matches = Partido.objects.filter(terminado=False,liga__id=lig,fecha__gte=partido.fecha).exclude(id=pid).order_by('fecha','id')[0:20]
 
@@ -1245,6 +1245,16 @@ def viewMatch(request,pid):
             og = True
 
         newG = Goles.objects.create(partido=partido,asignado=asig,contrato=ct,minuto=minuto,adicional=adicional,penal=pn,penales=False,og=og)
+        if og == False:
+        	if pn == False:
+        		texto = f"&#9917; ({newG.contrato.equ.nombre}) Gol de {newG.contrato.jug.nombre}"
+        	else:
+        		texto = f"&#9917; ({newG.contrato.equ.nombre}) Penal {newG.contrato.jug.nombre} "
+        elif og ==True:
+        	texto = f"&#9888;&#9917;  ({newG.contrato.equ.nombre}) Autogol {newG.contrato.jug.nombre}"
+
+        newC = PartidoComment.objects.create(comm_partido=partido,comm=texto,minuto = newG.minuto,tipo=0)
+        newC.save()
         newG.save()
 
         return render(request,'partido.html',{'matches':matches,'partido':partido,'jlocal':jugadores_local,'jvisit':jugadores_visit,'lgoles':lgoles,'vgoles':vgoles,'lpens':lpens,'vpens':vpens,'ligas':ligas,'listado':listado,'comentarios':comentarios})
@@ -1343,6 +1353,15 @@ def addNewPlayerGoal(request,t,m,a):
                 og = True
 
             newG = Goles.objects.create(partido=partido,asignado=asig,contrato=newC,minuto=minuto,adicional=adicional,penal=pn,penales=False,og=og)
+            if og == False:
+                if pn == False:
+                    texto = f"&#9917; ({newG.contrato.equ.nombre}) Gol de {newG.contrato.jug.nombre}"
+                else:
+                        texto = f"&#9917; ({newG.contrato.equ.nombre}) Penal {newG.contrato.jug.nombre} "
+            elif og ==True:
+                texto = f"&#9888;&#9917; ({newG.contrato.equ.nombre}) Autogol {newG.contrato.jug.nombre} "
+            newC = PartidoComment.objects.create(comm_partido=partido,comm=texto,minuto = newG.minuto,tipo=0)
+            newC.save()
             newG.save()
             return(redirect('/viewmatch/{}/'.format(partido.id)))
         else:
@@ -1652,3 +1671,126 @@ def editBiographics(request,c):
         return redirect('/view-contrato/{}'.format(thisC.id))
     else:
         return render(request,'edit-pbio.html',{'thisC':thisC,'listado':listado})
+
+
+def finance(request):
+    cuentas = Cuenta.objects.all().order_by('nombre')
+    tiposT = TrxTyp.objects.all().order_by('desc')
+
+    transacciones = Trx.objects.all().order_by('-fecha','-id')
+    saldos = Trx.objects.raw("select * from c_balance order by cid")
+
+    cortes = Trx.objects.values('fecha__year','fecha__month').annotate(qitems = Count('id')).order_by('-fecha__year','-fecha__month')
+
+    acc_saldo = 0
+    for s in saldos:
+        acc_saldo = acc_saldo + s.balance_final
+
+    return render(request,'finance2.html',{'cuentas':cuentas,'tiposT':tiposT,'trxs':transacciones,'saldos':saldos,'fbal':acc_saldo,'cortes':cortes})
+
+
+def saveTrx(request):
+
+    if request.method == "POST":
+        ttrx = request.POST.get("tipotrx")
+        cuenta = request.POST.get("cuenta")
+        monto = request.POST.get("monto")
+        fecha = request.POST.get("fecha")
+        desc = request.POST.get("detalle")
+
+        c = Cuenta.objects.get(pk=cuenta)
+        t = TrxTyp.objects.get(pk=ttrx)
+
+        nt = Trx.objects.create(fecha = fecha, debito = c, credito=t, monto = monto,desc=desc)
+
+
+        nt.save()
+
+        return redirect('/finance/')
+    else:
+        return redirect('/finance/')
+
+def savePmt(request):
+
+    if request.method == "POST":
+        origen = request.POST.get("origen")
+        destino = request.POST.get("destino")
+        monto = request.POST.get("monto")
+        fecha = request.POST.get("fecha")
+        desc = request.POST.get("detalle")
+
+        o = Cuenta.objects.get(pk=origen)
+        d = Cuenta.objects.get(pk=destino)
+
+        i = TrxTyp.objects.get(pk=1)
+        t = TrxTyp.objects.get(pk=2)
+
+        nt = Trx.objects.create(fecha = fecha, debito = o, credito=t, monto = monto,desc=desc)
+        nt.save()
+
+        nt2 = Trx.objects.create(fecha = fecha, debito = d, credito=i, monto = monto,desc=desc)
+        nt2.save()
+
+        return redirect('/finance/')
+    else:
+        return redirect('/finance/')
+
+
+def addBudgetReg(request):
+    input_anho = int(request.POST.get('y'))
+    input_mes = int(request.POST.get('m'))
+    input_mbudget = float(request.POST.get('mbudget'))
+    input_cuenta = TrxTyp.objects.get(pk=int(request.POST.get("cuenta")))
+    Budget.objects.create(cuenta=input_cuenta,anho=input_anho,mes=input_mes,mbudget=input_mbudget)
+    return redirect('/view-month/{}/{}'.format(input_anho,input_mes))
+
+def finance2(request):
+    cuentas = Cuenta.objects.all().order_by('nombre')
+    tiposT = TrxTyp.objects.all().order_by('desc')
+
+    transacciones = Trx.objects.all().order_by('-fecha','-id')
+    saldos = Trx.objects.raw("select * from c_balance order by cid")
+
+    cortes = Trx.objects.values('fecha__year','fecha__month').annotate(qitems = Count('id')).order_by('-fecha__year','-fecha__month')
+
+    acc_saldo = 0
+    for s in saldos:
+        acc_saldo = acc_saldo + s.balance_final
+
+    return render(request,'finance.html',{'cuentas':cuentas,'tiposT':tiposT,'trxs':transacciones,'saldos':saldos,'fbal':acc_saldo,'cortes':cortes})
+
+def viewmonth(request,y,m):
+    trx = Trx.objects.filter(fecha__year=y,fecha__month=m, credito__codigo=1).order_by('-fecha','-id')
+    categories = TrxTyp.objects.all().order_by('desc')
+    budexec = Trx.objects.raw("""select
+                                    *,
+                                    case when mbudget==0 then actual else actual-mbudget end bvar,
+                                    case when mbudget==0 then 100 else 100*(actual-mbudget)/mbudget end pvar
+
+                            from
+                                fin_control
+                            where
+                                mes={} and anho={} and (mbudget>0 or actual>0)
+                            order by mbudget desc""".format(m,y))
+    tot_act = 0
+    tot_bud = 0
+    for t in budexec:
+        tot_act = tot_act+t.actual
+        tot_bud = tot_bud+t.mbudget
+
+    if tot_bud == 0:
+        perf = 0
+    else:
+        perf = 100.0*tot_act/tot_bud
+
+    if perf <= 95.0:
+        colp = "green"
+    elif perf <= 101.5:
+        colp = "orange"
+    else:
+        colp = "red"
+
+    cortes = Trx.objects.values('fecha__year','fecha__month').annotate(qitems = Count('id')).order_by('-fecha__year','-fecha__month')
+
+    return render(request,'view-month.html',{'trxs':trx,'be':budexec,'anho':y,'mes':m,'actual':tot_act, 'budget':tot_bud,'perf':perf,'colp':colp,'cortes':cortes,'categ':categories})
+

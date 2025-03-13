@@ -95,4 +95,10 @@ urlpatterns = [
 	path('view-contrato/<c>',views.editContrato,name='editContrato'),
 	path('updatesquad/', views.updateSquad, name='updatesquad'),
 	path('edit-bio/<c>',views.editBiographics,name='editBio'),
+	path('finance/', views.finance, name='finance'),
+	path('financemob/', views.finance2, name='finance2'),
+	path('savetrx/', views.saveTrx, name='savetrx'),
+	path('savepmt/', views.savePmt, name='savepmt'),
+	path('addbudget/',views.addBudgetReg,name='addBudget'),
+	path('view-month/<y>/<m>', views.viewmonth, name='viewmonth'),
 	]

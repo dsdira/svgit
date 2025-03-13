@@ -47,6 +47,12 @@ admin.site.register(mlbTeam)
 admin.site.register(mlbGame)
 admin.site.register(matchSquad)
 admin.site.register(squadPlayers)
+admin.site.register(Cuenta)
+admin.site.register(TrxTyp)
+admin.site.register(Budget)
+admin.site.register(Trx)
+
+
 
 
 
