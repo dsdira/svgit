@@ -27,7 +27,7 @@ def busqueda(request):
 
 
 def addwiki(request):
-	wtypes = WikiType.objects.filter(category__in=['blog','character','event','journal','news','review']).order_by('category')
+	wtypes = WikiType.objects.filter(category__in=['blog','character','event','journal','news','review','profile']).order_by('category')
 	colecciones = Pagina.objects.all().order_by('titulo')
 
 	if request.method == 'POST':
@@ -573,13 +573,13 @@ def savepost(request):
 	return redirect('/journal/1')
 
 def journal(request,y):
-	max_year = Wiki.objects.filter(wtype__id=8).order_by('-updated_at').first()
+	max_year = Wiki.objects.filter(wtype__id=8).order_by('-created_at').first()
 
 	if int(y)==1:
 		y = max_year.updated_at.strftime('%Y')
 
-	anhos = Wiki.objects.filter(wtype__id=8).values('updated_at__year').annotate(qitems=Count('id')).order_by('-updated_at__year')
-	posts = Wiki.objects.filter(wtype__id=8,updated_at__year=int(y)).order_by('-updated_at','-id')
+	anhos = Wiki.objects.filter(wtype__id=8).values('created_at__year').annotate(qitems=Count('id')).order_by('-created_at__year')
+	posts = Wiki.objects.filter(wtype__id=8,updated_at__year=int(y)).order_by('-created_at','-id')
 	return render(request,'journal.html',{'posts':posts,'anhos':anhos,'anho':int(y)})
 
 
@@ -1112,7 +1112,14 @@ def cuaderno(request,c):
 	this_notebook = Cuaderno.objects.get(pk=int(c))
 	this_apuntes = Apunte.objects.filter(cuaderno = this_notebook).order_by('id')
 
-	return render(request,'cuaderno.html',{'this_notebook':this_notebook,'this_apuntes':this_apuntes})
+	n_apuntes = Apunte.objects.filter(cuaderno = this_notebook).exclude(subtitulo__isnull=True).count()
+
+	if n_apuntes <= 2:
+		str_temp = 'base_forms.html'
+	else:
+		str_temp = 'base_listing.html'
+
+	return render(request,'cuaderno.html',{'this_notebook':this_notebook,'this_apuntes':this_apuntes, 'n_apuntes':n_apuntes,  'str_temp':str_temp})
 
 
 def addapunte(request):
@@ -1674,11 +1681,11 @@ def editBiographics(request,c):
 
 
 def finance(request):
-    cuentas = Cuenta.objects.all().order_by('nombre')
+    cuentas = Cuenta.objects.all().order_by('tipo','id')
     tiposT = TrxTyp.objects.all().order_by('desc')
 
     transacciones = Trx.objects.all().order_by('-fecha','-id')
-    saldos = Trx.objects.raw("select * from c_balance order by cid")
+    saldos = Trx.objects.raw("select * from c_balance order by t_c, cid")
 
     cortes = Trx.objects.values('fecha__year','fecha__month').annotate(qitems = Count('id')).order_by('-fecha__year','-fecha__month')
 
@@ -1745,11 +1752,11 @@ def addBudgetReg(request):
     return redirect('/view-month/{}/{}'.format(input_anho,input_mes))
 
 def finance2(request):
-    cuentas = Cuenta.objects.all().order_by('nombre')
+    cuentas = Cuenta.objects.all().order_by('tipo','id')
     tiposT = TrxTyp.objects.all().order_by('desc')
 
     transacciones = Trx.objects.all().order_by('-fecha','-id')
-    saldos = Trx.objects.raw("select * from c_balance order by cid")
+    saldos = Trx.objects.raw("select * from c_balance order by t_c, cid")
 
     cortes = Trx.objects.values('fecha__year','fecha__month').annotate(qitems = Count('id')).order_by('-fecha__year','-fecha__month')
 
