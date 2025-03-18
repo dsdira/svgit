@@ -51,6 +51,7 @@ admin.site.register(Cuenta)
 admin.site.register(TrxTyp)
 admin.site.register(Budget)
 admin.site.register(Trx)
+admin.site.register(ApunteConsumo)
 
 
 

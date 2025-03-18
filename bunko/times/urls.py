@@ -101,4 +101,6 @@ urlpatterns = [
 	path('savepmt/', views.savePmt, name='savepmt'),
 	path('addbudget/',views.addBudgetReg,name='addBudget'),
 	path('view-month/<y>/<m>', views.viewmonth, name='viewmonth'),
+	path('addapucon/',views.addapucon,name='addapucon'),
+	
 	]

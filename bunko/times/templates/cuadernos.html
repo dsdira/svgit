@@ -23,7 +23,7 @@
 		<ul class="list-group">
         {% for n in notebooks %}
           <li class="list-group-item">
-         	<a href="{% url 'cuaderno' n.id %}" style="color:black; text-decoration: none;">{{n.titulo}}</a>
+         	 <a href="{% url 'cuaderno' n.id %}" style="color:black; text-decoration: none;">{{n.titulo}}</a>
           </li>
         {% endfor %}
       </ul>

@@ -1137,6 +1137,14 @@ def addapunte(request):
 
 def editapunte(request,aid):
 	apunte = Apunte.objects.get(pk=int(aid))
+	n_con = ApunteConsumo.objects.filter(apunte=apunte).count()
+
+	this_consumo = None
+
+	if n_con > 0:
+		this_consumo = ApunteConsumo.objects.filter(apunte=apunte).order_by('id')
+	list_mt = ['manga','episode','light-novel']
+	list_units = ['paginas','minutos','capitulos']
 	if request.method == 'POST':
 		apunte = Apunte.objects.get(pk=int(request.POST.get("aid")))
 		subtitulo = request.POST.get("subtitulo")
@@ -1145,7 +1153,7 @@ def editapunte(request,aid):
 		Apunte.objects.filter(id=apunte.id).update(contenido=contenido,subtitulo=subtitulo)
 		return redirect('/cuaderno/{}'.format(apunte.cuaderno.id))
 	else:
-		return render(request,'edit-apunte.html',{'apunte':apunte})
+		return render(request,'edit-apunte.html',{'apunte':apunte,'list_mt':list_mt,'list_units':list_units, 'n_con':n_con,'this_consumo':this_consumo})
 
 def nbtokindle(request, c):
 	this_notebook = Cuaderno.objects.get(pk=int(c))
@@ -1800,4 +1808,26 @@ def viewmonth(request,y,m):
     cortes = Trx.objects.values('fecha__year','fecha__month').annotate(qitems = Count('id')).order_by('-fecha__year','-fecha__month')
 
     return render(request,'view-month.html',{'trxs':trx,'be':budexec,'anho':y,'mes':m,'actual':tot_act, 'budget':tot_bud,'perf':perf,'colp':colp,'cortes':cortes,'categ':categories})
+
+def addapucon(request):
+	apunte = Apunte.objects.get(pk=request.POST.get("apu_id",""))
+
+	media_type = request.POST.get("media_type","")
+	unidades = request.POST.get("unidades","")
+	cantidad = request.POST.get("cantidad","")
+	fecha_inicio = request.POST.get("fecha_inicio","")
+	fecha_fin = request.POST.get("fecha_fin","")
+
+	newAC = ApunteConsumo.objects.create(apunte=apunte,
+		fecha_inicio=fecha_inicio,
+		fecha_fin=fecha_fin,
+		media_type = media_type,
+		unidades=unidades,
+		cantidad=cantidad)
+
+	newAC.save()
+
+	return redirect('/cuaderno/{}#{}'.format(apunte.cuaderno.id,apunte.id))
+
+
 

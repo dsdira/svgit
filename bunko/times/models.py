@@ -549,6 +549,12 @@ class Apunte(models.Model):
 	def parrafoeditable(self):
 		return self.contenido +' '+ f"<a href='/editapunte/{self.id}' style='color:gray; font-size: 0.85em;'>[ed]</a>"
 
+	@property
+	def consumos(self):
+		n_cons = ApunteConsumo.objects.filter(apunte__id = self.id).count()
+
+		return n_cons
+
 
 class Equipo(models.Model):
 	nombre = models.CharField(max_length=128)
@@ -762,6 +768,22 @@ class Budget(models.Model):
 
 	def __str__(self):
 		return str(self.anho)+'-'+str(self.mes)+':'+self.cuenta.desc
+
+class ApunteConsumo(models.Model):
+	apunte = models.ForeignKey(Apunte,on_delete=models.CASCADE)
+	fecha_inicio = models.DateField()
+	fecha_fin = models.DateField(blank=True,null=True)
+	media_type = models.CharField(max_length=100)
+	unidades = models.CharField(max_length=100)
+	cantidad = models.IntegerField()
+
+
+
+	def __str__(self):
+		return self.apunte.subtitulo
+
+
+
 
 
 

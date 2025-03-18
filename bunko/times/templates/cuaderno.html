@@ -36,7 +36,7 @@
 	{% if this_apuntes %}
 
         {% for a in this_apuntes %}
-          	{% if a.subtitulo %}<h5 id="contenido{{a.id}}" style="padding-top: 55px; margin-top: -55px;">{{a.subtitulo}}
+          	{% if a.subtitulo %}<h5 id="contenido{{a.id}}" style="padding-top: 55px; margin-top: -55px;">{% if a.consumos > 0 %}&#9989;{%else%}&#11036;{%endif%} {{a.subtitulo}}
                 <a href="#contenidos" style="text-decoration:none;">&#128285;</a></h5>{% endif %} 
             {{a.parrafoeditable|safe|linebreaks}}
             <hr>
