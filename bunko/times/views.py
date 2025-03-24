@@ -26,9 +26,12 @@ def busqueda(request):
 	return render(request,'results.html',{'wikies':wiki_matches,'books':book_matches,'movies':movie_matches,'keyword':keyword})
 
 
-def addwiki(request):
+def addwiki(request,col):
 	wtypes = WikiType.objects.filter(category__in=['blog','character','event','journal','news','review','profile']).order_by('category')
 	colecciones = Pagina.objects.all().order_by('titulo')
+	coleccion = None
+	if int(col) > 0:
+	    coleccion = Pagina.objects.get(pk=int(col))
 
 	if request.method == 'POST':
 		this_cat = WikiType.objects.get(pk=int(request.POST.get("cat_id")))
@@ -45,7 +48,7 @@ def addwiki(request):
 		else:
 			return redirect('/wiki/{}'.format(newW.id))
 	else:
-		return render(request,'add-wiki.html',{'wtypes':wtypes,'colecciones':colecciones})
+		return render(request,'add-wiki.html',{'wtypes':wtypes,'colecciones':colecciones,'coleccion':coleccion})
 
 def addpersona(request):
 	wtypes = WikiType.objects.all().order_by('category')
@@ -65,6 +68,7 @@ def addpersona(request):
 def editwiki(request,wikiid):
 	this_wiki = Wiki.objects.get(pk=int(wikiid))
 	wtypes = WikiType.objects.all()
+	relbook = MediaWiki.objects.filter(mwiki = this_wiki).latest('id')
 
 	if request.method == 'POST':
 		this_cat = WikiType.objects.get(pk=int(request.POST.get("cat_id")))
@@ -72,7 +76,10 @@ def editwiki(request,wikiid):
 		this_info = request.POST.get("info")
 		Wiki.objects.filter(id=int(wikiid)).update(wtype=this_cat,title=this_titulo,info=this_info,updated_at=datetime.now())
 
-		return redirect('/wiki/{}'.format(this_wiki.id))
+		if relbook:
+		    return redirect('/book/{}'.format(relbook.media_id))
+		else:
+		    return redirect('/wiki/{}'.format(this_wiki.id))
 	else:
 		return render(request,'edit-wiki.html',{'this_wiki':this_wiki,'wtypes':wtypes})
 
@@ -113,7 +120,7 @@ def homepage(request):
 	nlist = 16
 	npics = Wiki.objects.all().count()
 	npages = math.ceil(npics/nlist)
-	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8]).exclude(id=180).order_by('-updated_at')[0:nlist]
+	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8,19]).exclude(id=180).order_by('-updated_at')[0:nlist]
 	pinned_posts = Wiki.objects.filter(id=180)
 	on_reading = ProgressBar.objects.filter(avance__lt=F('cantidad'))
 	now_watching = SeasonProgressBar.objects.filter(avance__lt=F('temporada__episodes'))
@@ -164,7 +171,7 @@ def addbook(request):
 def book(request,bookid):
 	this_book = Book.objects.get(pk=int(bookid))
 	wtypes = WikiType.objects.all()
-	related_wikis = MediaWiki.objects.filter(media_type=1, media_id=this_book.id).order_by('-id')
+	related_wikis = MediaWiki.objects.filter(media_type=1, media_id=this_book.id).order_by('id')
 	listas = BookList.objects.all().order_by('listname')
 
 	citas = BookQuote.objects.filter(libro=this_book).order_by('id')
@@ -367,13 +374,14 @@ def addnewrelwiki(request):
 	this_cat = WikiType.objects.get(pk=int(request.POST.get("cat_id")))
 	this_titulo = request.POST.get("title")
 	this_info = request.POST.get("info")
+	this_book = Book.objects.get(pk=int(request.POST.get("media_id")))
 	newW = Wiki.objects.create(wtype=this_cat,title=this_titulo,info=this_info,updated_at=datetime.now())
 	newW.save()
 
 	newRW = MediaWiki.objects.create(mwiki=newW,media_type=int(request.POST.get("media_type")), media_id=int(request.POST.get("media_id")))
 	newRW.save()
 
-	return redirect('/')
+	return redirect('/book/{}'.format(this_book.id))
 
 def itemcol(request,itm,col):
 	this_wiki = Wiki.objects.get(pk=int(itm))
@@ -921,13 +929,13 @@ def savemovieduel(request,l,r,w):
 
 def quemarlibro(request,libro):
 
-	libro = Book.objects.get(pk=int(libro))
-	conteo_2 = Consumo.objects.create(volume = libro, pages=1,start_d='1999-12-31',finish_d='1999-12-31')
+	libro = Movie.objects.get(pk=int(libro))
+	conteo_2 = MovieWatch.objects.create(film = libro, wdate='1999-12-31')
 	conteo_2.save()
 
 
 
-	return redirect('/book/{}'.format(libro.id))
+	return redirect('/mqueue')
 
 
 def moviedbImport(request):
@@ -971,7 +979,7 @@ def moviedbImport(request):
     str_director = str_director[:-1]
 
     str_cast = ""
-    for c in movie_dict['cast'][0:12]:
+    for c in movie_dict['cast'][0:25]:
         str_cast = str_cast+c['original_name']+","
 
     str_cast = str_cast[:-1]

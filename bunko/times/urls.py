@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
 	path('plantilla/', views.plantilla, name='plantilla'),
-	path('add-wiki/', views.addwiki, name='addwiki'),
+	path('add-wiki/<col>', views.addwiki, name='addwiki'),
 	path('edit-wiki/<wikiid>', views.editwiki, name='editwiki'),
 	path('wiki/<wid>', views.wiki, name='wiki'),
 	path('', views.homepage, name='homepage'),
@@ -102,5 +102,5 @@ urlpatterns = [
 	path('addbudget/',views.addBudgetReg,name='addBudget'),
 	path('view-month/<y>/<m>', views.viewmonth, name='viewmonth'),
 	path('addapucon/',views.addapucon,name='addapucon'),
-	
+
 	]

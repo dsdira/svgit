@@ -58,20 +58,15 @@
 
 	{% if relw %}
         <div style="clear:both;"></div>
-			<h5>Related Wikis</h5>
-			<div class="row" data-masonry='{"percentPosition": true }'>
+
 			{% for a in relw %}
-			<div class="col-sm-6 col-lg-12 mb-4">
-			      <div class="card">
-			        <div class="card-body">
-			          <h5 class="card-title"><a href='{% url "wiki" a.mwiki.id  %}' style="text-decoration: none;">{{a.mwiki.title}}</a>
-			          	<br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{a.mwiki.wtype.category|capfirst}} | {{a.mwiki.updated_at|date:"M d, Y"}}</small></h5>
-			          <p class="card-text">{{a.mwiki.headtext}}</p>
-			        </div>
-			      </div>
-			       </div>
+
+			          <h5 class="card-title"><a href='{% url "editwiki" a.mwiki.id  %}' style="text-decoration: none;">{{a.mwiki.title}}</a></h5>
+			          {{a.mwiki.cleantext|safe|linebreaks}}
+			          <hr>
+
 			{% endfor %}
-			</div>
+
 
 			{%endif%}
 
@@ -218,15 +213,8 @@
 	    <label for="exampleFormControlInput1">Title</label>
 	    <input type = "text" name="title" class="form-control" id="exampleFormControlInput1">
 	  </div>
-	  <br>
-	  <div class="form-group">
-	    <label for="exampleFormControlSelect1">Category</label>
-	    <select class="form-control" name="cat_id" id="exampleFormControlSelect1">
-	    	{% for w in wtypes %}
-	      		<option value = "{{w.id}}">{{w.category}}</option>
-	    	{% endfor %}
-	    </select>
-	  </div>
+
+	    <input type="hidden" name="cat_id" value="19" id="exampleFormControlSelect1">
 	  <br>
 	  <div class="form-group">
 	    <label for="exampleFormControlTextarea1">Content</label>

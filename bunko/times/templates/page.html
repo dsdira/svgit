@@ -19,7 +19,7 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title"><a href='{% url "itemcol" a.child.id this_page.id  %}' style="text-decoration: none;">{{a.child.title}}</a>
-          	<br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{a.child.wtype.category|capfirst}} | {{a.child.updated_at|date:"M d, Y"}}</small></h5>
+          	<br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{a.child.wtype.category|capfirst}} | {{a.child.updated_at|date:"M j, Y"}}</small></h5>
           <p class="card-text">{{a.child.headtext}}</p>
         </div>
       </div>

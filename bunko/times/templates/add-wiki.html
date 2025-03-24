@@ -4,7 +4,7 @@
 
 {% block contenido %}
 <article>
-	<h4>Add New Entry</h4>
+	<h4>Add New Entry to {{coleccion.titulo}}</h4>
 
 	<form method="POST">
 	  {% csrf_token %}
@@ -24,9 +24,13 @@
 	  <br>
 	  <div class="form-group">
 	    <label for="exampleFormControlTextarea1">Content</label>
-	    <textarea name = "info" class="form-control" id="exampleFormControlTextarea1" rows="20"></textarea>
+	    <textarea name = "info" class="form-control" id="exampleFormControlTextarea1" rows="12"></textarea>
 	  </div>
 	   <br>
+
+	   {% if coleccion %}
+	   <input type="hidden" value = "{{coleccion.id}}" name="col_id" />
+	   {% else %}
 	  <div class="form-group">
 	    <label for="exampleFormControlSelect1">Collection</label>
 	    <select class="form-control" name="col_id" id="exampleFormControlSelect1">
@@ -37,6 +41,7 @@
 	    </select>
 	  </div>
 	  <br>
+	  {% endif %}
 	  <button type="submit" class="btn btn-primary">Add Entry</button>
 	</form>
 

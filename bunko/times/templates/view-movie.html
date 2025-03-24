@@ -17,7 +17,7 @@
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
   	<br>
   	<article class="blog-post">
-	<h4>{{this_movie.titulo}} </h4>
+	<h4>{{this_movie.titulo}} <a href="{% url 'quemarlibro' this_movie.id %}"><span class="badge text-bg-secondary">Quemar</span></a></h4>
 
 	 {% if this_movie.mainPic %}<img src="{{this_movie.mainPic}}" style="border:1px solid grey; float:left; width:40%; margin-right: 16px; margin-bottom: 16px;">{% endif %}
 
@@ -29,6 +29,7 @@
 
 	{% if cast %}
 	<p>Cast:<br> {% for d in cast %}<a href="{% url 'movieperson' d.persona %}"><span class="badge text-bg-secondary">{{d.persona}}</span></a>&nbsp;{% endfor %}
+
 	{% endif %}
 
 		{% if relw %}
