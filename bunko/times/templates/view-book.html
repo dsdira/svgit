@@ -63,7 +63,9 @@
 
 			          <h5 class="card-title"><a href='{% url "editwiki" a.mwiki.id  %}' style="text-decoration: none;">{{a.mwiki.title}}</a></h5>
 			          {{a.mwiki.cleantext|safe|linebreaks}}
+			          <div style='clear:both;'></div>
 			          <hr>
+
 
 			{% endfor %}
 

@@ -26,3 +26,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+
+
+.mediapic{
+  position:relative;
+  width:100%;
+  padding-top:65%;
+  margin:1%;
+  border:1px solid grey;
+  float:left;
+  background-size: cover;
+  position:relative;
+  background-position: center;
+}

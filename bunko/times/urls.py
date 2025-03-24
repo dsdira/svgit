@@ -102,5 +102,6 @@ urlpatterns = [
 	path('addbudget/',views.addBudgetReg,name='addBudget'),
 	path('view-month/<y>/<m>', views.viewmonth, name='viewmonth'),
 	path('addapucon/',views.addapucon,name='addapucon'),
+	path('vphoto/<photo>/<pagina>',views.mphoto,name='photo'),
 
 	]

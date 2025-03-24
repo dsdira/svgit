@@ -1036,11 +1036,23 @@ def mediapage(request,p):
 	else:
 		next_p = (int(p)+1)
 
+	pagina = int(p)
+
 
 
 	medias = TimesMedia.objects.all().order_by('-id')[int(p)*ppp:(int(p)*ppp)+ppp]
 
-	return render(request,'times-album.html',{'medias':medias,'next_p':next_p,'paginas':paginas,'next_p':next_p})
+	return render(request,'times-album.html',{'medias':medias,'next_p':next_p,'paginas':paginas,'next_p':next_p,'pagina':pagina})
+
+def mphoto(request,photo,pagina):
+	n_p = int(pagina)
+	this_photo = TimesMedia.objects.get(pk=int(photo))
+
+	str_embeding = "<img style='width:100%; border:1px solid grey; float:left' src='{}'>".format(this_photo.imagen.url)
+	
+	str_embeding2 = "<img style='width:40%; margin-right:1em; margin-top:1em; margin-bottom:1em; border:1px solid grey; float:left' src='{}'>".format(this_photo.imagen.url)
+
+	return render(request,'photo.html',{'this_photo':this_photo,'pagina':n_p,'strI':str_embeding, 'strI2':str_embeding2})
 
 def addbooktags(request):
 	this_libro = Book.objects.get(pk=int(request.POST.get("book")))
