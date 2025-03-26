@@ -5,13 +5,32 @@
 {% block contenido %}
 
 <article>
+
 		<h4>Journal {{anho}} Edition</h4>
+
+    <form method="POST" action="{% url 'savepost' %}">
+      {% csrf_token %}
+    <div class="form-group">
+
+      <textarea name = "entrada" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+     <div class="row">
+    <div class="form-group col-sm-6 col-lg-8 mb-8">
+      <label for="exampleFormControlInput1">Date</label>
+      <input type = "text" value="{% now 'Y-m-d' %}" name="fecha" class="form-control" id="exampleFormControlInput1">
+    </div>
+    <div class="form-group col-sm-6 col-lg-4 mb-4">
+        <label for="exampleFormControlInput1">&nbsp;&nbsp;</label>
+      <button type="submit" class="btn btn-primary" style="width:100%">Post Update</button>
+    </div>
+    </div>
+    </form>
 
 	  <ul class="list-group" reversed>
         {% for a in posts %}
           <li class="list-group-item">
-          	<span style="color:grey;"><i>{{a.created_at|date:"N j"}}</span> <a href="{% url 'wiki' a.id %}" style='color:white;' onmouseover="this.style.color='blue';" onmouseout="this.style.color='white';">#{{a.id}}</a></i><br>
-            {{a.cleantext|safe}}
+          	{{a.cleantext|safe}} {{a.hashtags|safe}} <br>
+            <span style="color:grey; font-size:  0.75em;"><i>{{a.created_at|date:"N j"}}</span> <a href="{% url 'wiki' a.id %}" style='color:white; font-size:  0.75em;' onmouseover="this.style.color='blue'; " onmouseout="this.style.color='white';">#{{a.id}}</a></i><br>
           </li>
         {% endfor %}
       </ul>

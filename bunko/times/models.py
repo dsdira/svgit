@@ -6,7 +6,8 @@ import os
 from uuid import uuid4
 from django.db.models import Q, Avg, Count, Min, Sum
 from random import choice
-
+from django.utils.timezone import now
+import re
 
 def path_and_name(instance, filename):
     upload_to = 'wiki_media'
@@ -781,6 +782,47 @@ class ApunteConsumo(models.Model):
 
 	def __str__(self):
 		return self.apunte.subtitulo
+
+class Tweet(models.Model):
+	texto = models.TextField()
+	created_at = models.DateTimeField(auto_now=True,editable=False)
+
+	@property
+	def cleantext(self):
+		pat = re.compile(r"#(\w+)")
+		listado = pat.findall(self.texto)
+
+		this_text = self.texto
+
+		if len(listado)>0:
+			for l in listado:
+				this_text = this_text.replace("#"+l,"")
+
+		return this_text.strip()
+
+	@property
+	def hashtags(self):
+		pat = re.compile(r"#(\w+)")
+		listado = pat.findall(self.texto)
+
+		this_tags = ''
+
+		if len(listado)>0:
+			for l in listado:
+				this_tags = this_tags + "<a href='/etiqueta/1/{}' style='text-decoration:none;'>#{}</a> ".format(l,l)
+
+		return this_tags
+
+	
+	def __str__(self):
+		return self.texto[0:40]
+
+class Etiqueta(models.Model):
+	tweet = models.ForeignKey(Tweet, on_delete = models.CASCADE)
+	etiqueta = models.CharField(max_length=100)
+
+	def __str__(self):
+		return self.etiqueta
 
 
 

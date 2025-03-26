@@ -6,7 +6,7 @@
 <article>
 	<h4>Add New Book</h4>
 
-	<form method="POST">
+	<form method="POST" enctype="multipart/form-data">
 	  {% csrf_token %}
 	  <div class="form-group">	
 	    <label for="exampleFormControlInput1">Title</label>
@@ -51,6 +51,12 @@
 	    <input type = "text" name="tags" class="form-control" id="exampleFormControlInput1">
 	  </div>
 	  <br>
+	  	 
+	  <div class="form-group">
+    	<label for="exampleFormControlFile1">Book Cover</label>
+    	<input type="file" name = "imagen" class="form-control-file" id="exampleFormControlFile1">
+  	</div>
+  	<br>
 	  <button type="submit" class="btn btn-primary">Add Book</button>
 	</form>
 

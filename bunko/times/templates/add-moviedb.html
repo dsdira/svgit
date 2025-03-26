@@ -7,7 +7,7 @@
 
 	<h4>Add New Movie</h4>
 
-	<form method="POST" action="{% url 'savemovie' %}">
+	<form method="POST" action="{% url 'savemovie' %}" enctype="multipart/form-data">
 	  {% csrf_token %}
 	  <div class="form-group">	
 	    <label for="exampleFormControlInput1">Title</label>
@@ -40,6 +40,11 @@
 	    <label for="exampleFormControlTextarea1">Cast</label>
 	    <textarea name = "cast"  class="form-control" id="exampleFormControlTextarea1" rows="3">{{str_cast}}</textarea>
 	  </div><br>
+	   <div class="form-group">
+    	<label for="exampleFormControlFile1">Movie Poster</label>
+    	<input type="file" name = "imagen" class="form-control-file" id="exampleFormControlFile1">
+  	</div>
+  	<br>
 	  <button type="submit" class="btn btn-primary">Add Movie</button>
 	</form>
 

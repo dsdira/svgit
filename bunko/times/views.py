@@ -10,6 +10,7 @@ from django.db.models.functions import Cast
 from datetime import datetime
 import math
 import random
+import re
 
 
 def plantilla(request):
@@ -163,6 +164,13 @@ def addbook(request):
 			for t in tags:
 				bt = BookTag.objects.create(libro=newB,tag=t)
 				bt.save()
+
+		if request.FILES.get("imagen","")!='':
+			ix = request.FILES.get("imagen")
+			newM = BookMedia.objects.create(libro=newB,imgtype=1,imagen=ix)
+			newM.save()
+
+
 
 		return redirect('/book/{}'.format(newB.id))
 	else:
@@ -570,25 +578,41 @@ def addfilmmedia(request):
 	return redirect('/movie/{}'.format(this_movie.id))
 
 def savepost(request):
-	fecha = request.POST.get("fecha")
 	entry = request.POST.get("entrada")
-	this_cat = WikiType.objects.get(pk=8)
-	datetime_object = datetime.strptime(fecha+' 00:00:00', '%Y-%m-%d %H:%M:%S')
 
-	newW = Wiki.objects.create(wtype=this_cat,title='Journal Entry',info=entry,updated_at=datetime_object)
-	newW.save()
+	
+	newT = Tweet.objects.create(texto = entry)
+	newT.save()
+
+	pat = re.compile(r"#(\w+)")
+
+	listado = pat.findall(entry)
+
+	if len(listado)>0:
+		for l in listado:
+			newE = Etiqueta.objects.create(tweet=newT, etiqueta=l)
 
 	return redirect('/journal/1')
-
+ 
 def journal(request,y):
-	max_year = Wiki.objects.filter(wtype__id=8).order_by('-created_at').first()
+	max_year = Tweet.objects.order_by('-created_at').first()
 
 	if int(y)==1:
-		y = max_year.updated_at.strftime('%Y')
+		y = max_year.created_at.strftime('%Y')
 
-	anhos = Wiki.objects.filter(wtype__id=8).values('created_at__year').annotate(qitems=Count('id')).order_by('-created_at__year')
-	posts = Wiki.objects.filter(wtype__id=8,updated_at__year=int(y)).order_by('-created_at','-id')
+	anhos = Tweet.objects.values('created_at__year').annotate(qitems=Count('id')).order_by('-created_at__year')
+	posts = Tweet.objects.filter(created_at__year=int(y)).order_by('-created_at','-id')
 	return render(request,'journal.html',{'posts':posts,'anhos':anhos,'anho':int(y)})
+
+def etiqueta(request,y,e):
+	max_year = Etiqueta.objects.filter(etiqueta=e).order_by('-tweet__created_at').first()
+
+	if int(y)==1:
+		y = max_year.tweet.created_at.strftime('%Y')
+
+	anhos = Etiqueta.objects.filter(etiqueta=e).values('tweet__created_at__year').annotate(qitems=Count('id')).order_by('-tweet__created_at__year')
+	posts = Etiqueta.objects.filter(etiqueta=e,tweet__created_at__year=int(y)).order_by('-tweet__created_at','-id')
+	return render(request,'etiqueta.html',{'posts':posts,'anhos':anhos,'anho':int(y), 'this_etiqueta':e})
 
 
 
@@ -1008,6 +1032,11 @@ def savemovie(request):
 	for strC in request.POST.get("cast","").split(","):
 		newMC = MovieCredit.objects.create(film=movie,credit='Main Cast',persona=strC.strip())
 		newMC.save()
+
+	if request.FILES.get("imagen","")!='':
+		ix = request.FILES.get("imagen")
+		newMM = MovieMedia.objects.create(film=newM,imgtype=1,imagen=ix)
+		newMM.save()
 
 
 

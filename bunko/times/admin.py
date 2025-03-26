@@ -52,6 +52,8 @@ admin.site.register(TrxTyp)
 admin.site.register(Budget)
 admin.site.register(Trx)
 admin.site.register(ApunteConsumo)
+admin.site.register(Tweet)
+admin.site.register(Etiqueta)
 
 
 

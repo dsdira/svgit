@@ -103,5 +103,6 @@ urlpatterns = [
 	path('view-month/<y>/<m>', views.viewmonth, name='viewmonth'),
 	path('addapucon/',views.addapucon,name='addapucon'),
 	path('vphoto/<photo>/<pagina>',views.mphoto,name='photo'),
+	path('etiqueta/<y>/<e>',views.etiqueta,name='etiqueta'),
 
 	]
