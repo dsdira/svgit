@@ -11,7 +11,7 @@
 
 {{this_page.info|linebreaks}}
 
-<p><a href="{% url 'kindlePublish' this_page.id %}">Print to Publish</a></p>
+<p><a href="{% url 'kindlePublish' this_page.id %}">Print to Publish</a> <a href="{% url 'addwiki' this_page.id %}">Add Item</a></p> 
 
 <div class="row" data-masonry='{"percentPosition": true }'>
 {% for a in children %}

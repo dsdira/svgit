@@ -104,5 +104,8 @@ urlpatterns = [
 	path('addapucon/',views.addapucon,name='addapucon'),
 	path('vphoto/<photo>/<pagina>',views.mphoto,name='photo'),
 	path('etiqueta/<y>/<e>',views.etiqueta,name='etiqueta'),
+	path('addcoleccion/',views.addcoleccion,name='addcoleccion'),
+	path('addbookcoleccion/',views.addbooklist,name='addbookcoleccion'),
+	path('addbooktolist2/<book>/<lista>',views.addbooktolist2,name='addbooktolist2'),
 
 	]

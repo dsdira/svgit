@@ -438,7 +438,14 @@ def booklists(request):
 def booklist(request,lid):
 	this_lista = BookList.objects.get(pk=int(lid))
 	this_books = RelBookList.objects.filter(blist=this_lista).order_by('id')
-	return render(request,'lista.html',{'this_lista':this_lista,'this_books':this_books})
+	book_matches = None
+
+	if request.method == 'POST':
+		keyword = request.POST.get("keyword","")
+		if len(keyword)>2:
+			book_matches = Book.objects.filter(Q(title__contains=keyword) | Q(info__contains=keyword))
+
+	return render(request,'lista.html',{'this_lista':this_lista,'this_books':this_books, 'book_s':book_matches})
 
 def addprogressbar(request):
 	import datetime
@@ -1877,6 +1884,41 @@ def addapucon(request):
 	newAC.save()
 
 	return redirect('/cuaderno/{}#{}'.format(apunte.cuaderno.id,apunte.id))
+
+
+def addcoleccion(request):
+	if request.method == 'POST':
+		this_titulo = request.POST.get("title")
+		this_desc = request.POST.get("info")
+
+		newC = Pagina.objects.create(titulo = this_titulo, info=this_desc)
+		newC.save()
+
+		return redirect('/page/{}'.format(newC.id))
+		
+	return render(request,'add-coleccion.html',{})
+
+def addbooklist(request):
+	if request.method == 'POST':
+		this_titulo = request.POST.get("title")
+		this_desc = request.POST.get("info")
+
+		newC = BookList.objects.create(listname = this_titulo, listinfo=this_desc)
+		newC.save()
+
+		return redirect('/booklist/{}'.format(newC.id))
+		
+	return render(request,'add-book-coleccion.html',{})
+
+
+def addbooktolist2(request,book,lista):
+	this_libro = Book.objects.get(pk=int(book))
+	this_lista = BookList.objects.get(pk=int(lista))
+
+	newR = RelBookList.objects.create(blist=this_lista,bbook=this_libro)
+	newR.save()
+
+	return redirect('/booklist/{}'.format(this_lista.id))
 
 
 
