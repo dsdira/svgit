@@ -182,13 +182,19 @@ def book(request,bookid):
 	related_wikis = MediaWiki.objects.filter(media_type=1, media_id=this_book.id).order_by('id')
 	listas = BookList.objects.all().order_by('listname')
 
+	conteo_be = BookEntity.objects.filter(libro__id=this_book.id).count()
+
 	citas = BookQuote.objects.filter(libro=this_book).order_by('id')
 
 	barras = ProgressBar.objects.filter(libro=this_book,avance__lt=F('cantidad'))
 
 	btags = BookTag.objects.filter(libro__id=this_book.id)
 
-	return render(request,'view-book.html',{'this_book':this_book,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas})
+	if conteo_be > 0:
+		entidades = BookEntity.objects.filter(libro__id=this_book.id).order_by('id')
+		return render(request,'view-book-entity.html',{'this_book':this_book,'entidades':entidades,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas})
+	else:
+		return render(request,'view-book.html',{'this_book':this_book,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas})
 
 def books(request,y):
 	max_year = Consumo.objects.order_by('-finish_d').first()
@@ -1920,5 +1926,25 @@ def addbooktolist2(request,book,lista):
 
 	return redirect('/booklist/{}'.format(this_lista.id))
 
+def addbookentity(request,book_id):
+	this_book = Book.objects.get(pk=int(book_id))
+	wtypes = ["character","place","event","object","battle"]
+
+	if request.method == 'POST':
+		newBE = BookEntity.objects.create(libro=this_book,etype=request.POST.get("etype"),nombre=request.POST.get("nombre"),info=request.POST.get("info"))
+		newBE.save()
+		return redirect('/book/{}'.format(this_book.id))
+
+	return render(request,'add-book-entity.html',{'this_book':this_book,'wtypes':wtypes})
+
+def viewentity(request,ent_id):
+	this_entity = BookEntity.objects.get(pk=int(ent_id))
+	entidades = BookEntity.objects.filter(libro__id=this_entity.libro.id).order_by('id')
+
+	if request.method == 'POST':
+		this_entity.info = request.POST.get("info")
+		this_entity.save()
+
+	return render(request,'view-single-entity.html',{'this_entity':this_entity,'entidades':entidades})
 
 

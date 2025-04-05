@@ -1,6 +1,6 @@
-{% extends 'base_forms.html' %}
+{% extends 'base_listing.html' %}
 
-{% block titulo %}{{this_book.title}}{% endblock %}
+{% block titulo %}{{this_wiki.title}}{% endblock %}
 
 {% block contenido %}
 
@@ -17,7 +17,7 @@
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
   	<br>
   	<article class="blog-post">
-	<h4>{{this_book.titulo}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_book.wtype.category|capfirst}} | {{this_book.authors_links|safe}} | <a href="{% url 'addbookentity' this_book.id %}" style="text-decoration: none; color:gray;">Add Ent</a></small></h4>
+	<h4>{{this_book.titulo}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_book.wtype.category|capfirst}} | {{this_book.authors_links|safe}}</small></h4>
 
 	{% if barras %}
 		{%for b in barras%}
@@ -235,7 +235,18 @@
 
 
 
-
-
-
 {% endblock%}
+
+
+
+{% block rightbar %}
+<br>
+<h4>Book Entities <a href="{% url 'addbookentity' this_book.id %}" style="text-decoration:none;">&#x271A;</a></h4>
+      <ul class="list-group">
+        {% for e in entidades %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'viewentity' e.id %}" style="color:black; text-decoration: none;"> {{e.nombre}}</a>
+          </li>
+        {% endfor %}
+      </ul>
+{% endblock %}

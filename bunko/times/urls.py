@@ -107,5 +107,8 @@ urlpatterns = [
 	path('addcoleccion/',views.addcoleccion,name='addcoleccion'),
 	path('addbookcoleccion/',views.addbooklist,name='addbookcoleccion'),
 	path('addbooktolist2/<book>/<lista>',views.addbooktolist2,name='addbooktolist2'),
+	path('addbookentity/<book_id>',views.addbookentity,name='addbookentity'),
+	path('viewentity/<ent_id>',views.viewentity,name='viewentity'),
+	
 
 	]

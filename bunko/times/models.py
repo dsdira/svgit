@@ -824,6 +824,17 @@ class Etiqueta(models.Model):
 	def __str__(self):
 		return self.etiqueta
 
+class BookEntity(models.Model):
+	libro = models.ForeignKey(Book,on_delete=models.CASCADE)
+	etype = models.CharField(max_length=50)
+	nombre = models.CharField(max_length=250)
+	info = models.TextField()
+
+	def __str__(self):
+		return self.nombre
+
+
+
 
 
 
