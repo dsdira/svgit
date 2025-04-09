@@ -135,6 +135,7 @@ def homepage(request):
 def addbook(request):
 	personas = Wiki.objects.filter(wtype__category='persona').order_by('title')
 	booktypes = WikiType.objects.filter(id__in=[9,10,11,12]).order_by('id')
+	listas = BookList.objects.all().order_by('listname')
 
 	if request.method == 'POST':
 		autor = Wiki.objects.get(pk=int(request.POST.get("autor")))
@@ -170,11 +171,16 @@ def addbook(request):
 			newM = BookMedia.objects.create(libro=newB,imgtype=1,imagen=ix)
 			newM.save()
 
+		if int(request.POST.get("lista_id"))>0:
+			this_lista = BookList.objects.get(pk=int(request.POST.get("lista_id")))
+			newBL =  RelBookList.objects.create(blist=this_lista,bbook=newB)
+			newBL.save()
+
 
 
 		return redirect('/book/{}'.format(newB.id))
 	else:
-		return render(request,'add-book.html',{'personas':personas,'booktypes':booktypes})
+		return render(request,'add-book.html',{'personas':personas,'booktypes':booktypes,'listas':listas})
 
 def book(request,bookid):
 	this_book = Book.objects.get(pk=int(bookid))

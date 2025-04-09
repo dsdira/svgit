@@ -51,6 +51,16 @@
 	    <input type = "text" name="tags" class="form-control" id="exampleFormControlInput1">
 	  </div>
 	  <br>
+	  <div class="form-group">
+	    <label for="exampleFormControlSelect1">List or Series</label>
+	    <select class="form-control" name="lista_id" id="exampleFormControlSelect1">
+	    	<option value="0">None</option>
+	    	{% for w in listas %}
+	      		<option value = "{{w.id}}">{{w.listname}}</option>
+	    	{% endfor %}
+	    </select>
+	  </div>
+	  <br>
 	  	 
 	  <div class="form-group">
     	<label for="exampleFormControlFile1">Book Cover</label>
