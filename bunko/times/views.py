@@ -443,7 +443,10 @@ def booklists(request):
 
 def booklist(request,lid):
 	this_lista = BookList.objects.get(pk=int(lid))
-	this_books = RelBookList.objects.filter(blist=this_lista).order_by('id')
+	if this_lista.tipo == 0:
+		this_books = RelBookList.objects.filter(blist=this_lista).order_by('id')
+	else:
+		this_books = RelBookList.objects.filter(blist=this_lista).order_by('bbook__pub_year','id')
 	book_matches = None
 
 	if request.method == 'POST':
@@ -495,9 +498,9 @@ def statistics(request):
 	paginas = ProgressLog.objects.raw("""
 			select
 			    1 as id,
-			     strftime('%Y',date(fecha,'weekday 0')) as anho,
-			      1*strftime('%m',date(fecha,'weekday 0'))-1 as mes,
-			       1*strftime('%d',date(fecha,'weekday 0')) as dia,
+			     strftime('%Y',date(fecha,'weekday 6')) as anho,
+			      1*strftime('%m',date(fecha,'weekday 6'))-1 as mes,
+			       1*strftime('%d',date(fecha,'weekday 6')) as dia,
 			    sum(delta_lec) as paginas
 			from
 			    times_progresslog a
@@ -508,9 +511,9 @@ def statistics(request):
 			where
 			    c.wtype_id in (9,10)
 			group by
-			      strftime('%Y',date(fecha,'weekday 0')) ,
-			      1*strftime('%m',date(fecha,'weekday 0')) -1,
-			       1*strftime('%d',date(fecha,'weekday 0'))
+			      strftime('%Y',date(fecha,'weekday 6')) ,
+			      1*strftime('%m',date(fecha,'weekday 6')) -1,
+			       1*strftime('%d',date(fecha,'weekday 6'))
 
 						    """)
 	data_points = "["
@@ -521,11 +524,11 @@ def statistics(request):
 	capitulos = ProgressLog.objects.raw("""
 			select
 			    1 as id,
-			     strftime('%Y',date(fecha,'weekday 0')) as anho,
-			      1*strftime('%m',date(fecha,'weekday 0'))-1 as mes,
-			       1*strftime('%d',date(fecha,'weekday 0')) as dia,
+			     strftime('%Y',date(fecha,'weekday 6')) as anho,
+			      1*strftime('%m',date(fecha,'weekday 6'))-1 as mes,
+			       1*strftime('%d',date(fecha,'weekday 6')) as dia,
 			    sum(delta_lec) as paginas ,
-			    date(fecha,'weekday 0') fecha
+			    date(fecha,'weekday 6') fecha
 			from
 			    times_progresslog a
 			    left join times_progressbar b
@@ -535,10 +538,10 @@ def statistics(request):
 			where
 			    c.wtype_id in (11,12)
 			group by
-			      strftime('%Y',date(fecha,'weekday 0')) ,
-			      1*strftime('%m',date(fecha,'weekday 0')) -1,
-			       1*strftime('%d',date(fecha,'weekday 0')),
-			       date(fecha,'weekday 0') order by date(fecha,'weekday 0') desc
+			      strftime('%Y',date(fecha,'weekday 6')) ,
+			      1*strftime('%m',date(fecha,'weekday 6')) -1,
+			       1*strftime('%d',date(fecha,'weekday 6')),
+			       date(fecha,'weekday 6') order by date(fecha,'weekday 6') desc
 						    """)
 	data_points2 = "["
 	for p in capitulos:
@@ -593,7 +596,7 @@ def addfilmmedia(request):
 def savepost(request):
 	entry = request.POST.get("entrada")
 
-	
+
 	newT = Tweet.objects.create(texto = entry)
 	newT.save()
 
@@ -606,7 +609,7 @@ def savepost(request):
 			newE = Etiqueta.objects.create(tweet=newT, etiqueta=l)
 
 	return redirect('/journal/1')
- 
+
 def journal(request,y):
 	max_year = Tweet.objects.order_by('-created_at').first()
 
@@ -635,11 +638,11 @@ def mediastats(request):
 			with todo as (select
 			    1 as id,
 			    'shows' type,
-			    strftime('%Y',date(a.fecha,'weekday 0')) as anho,
-			    1*strftime('%m',date(a.fecha,'weekday 0'))-1 as mes,
-			    1*strftime('%d',date(a.fecha,'weekday 0')) as dia,
+			    strftime('%Y',date(a.fecha,'weekday 6')) as anho,
+			    1*strftime('%m',date(a.fecha,'weekday 6'))-1 as mes,
+			    1*strftime('%d',date(a.fecha,'weekday 6')) as dia,
 			    round(sum(a.delta_lec*c.avg_runtime/60.0),1) as horas ,
-			    date(a.fecha,'weekday 0') fecha
+			    date(a.fecha,'weekday 6') fecha
 			from
 			    times_seasonprogresslog a
 			    left join times_seasonprogressbar b
@@ -647,34 +650,34 @@ def mediastats(request):
 			    left join times_season c
 			    on b.temporada_id = c.id
 			where
-			    a.fecha >= '2025-01-01'
+			    a.fecha >= '2025-04-01'
 			group by
-			    strftime('%Y',date(a.fecha,'weekday 0')),
-			    1*strftime('%m',date(a.fecha,'weekday 0'))-1,
-			    1*strftime('%d',date(a.fecha,'weekday 0')),
-			    date(a.fecha,'weekday 0')
+			    strftime('%Y',date(a.fecha,'weekday 6')),
+			    1*strftime('%m',date(a.fecha,'weekday 6'))-1,
+			    1*strftime('%d',date(a.fecha,'weekday 6')),
+			    date(a.fecha,'weekday 6')
 
 			union all
 
 			select
 			    1 as id,
 			    'movies' type,
-			    strftime('%Y',date(a.wdate,'weekday 0')) as anho,
-			    1*strftime('%m',date(a.wdate,'weekday 0'))-1 as mes,
-			    1*strftime('%d',date(a.wdate,'weekday 0')) as dia,
+			    strftime('%Y',date(a.wdate,'weekday 6')) as anho,
+			    1*strftime('%m',date(a.wdate,'weekday 6'))-1 as mes,
+			    1*strftime('%d',date(a.wdate,'weekday 6')) as dia,
 			    round(sum(b.runtime/60.0),1) as horas ,
-			    date(a.wdate,'weekday 0') fecha
+			    date(a.wdate,'weekday 6') fecha
 			from
 			    times_moviewatch a
 			    left join times_movie b
 			    on a.film_id = b.id
 			where
-			    a.wdate >= '2024-10-01'
+			    a.wdate >= '2025-04-01'
 			group by
-			    strftime('%Y',date(a.wdate,'weekday 0')),
-			    1*strftime('%m',date(a.wdate,'weekday 0'))-1,
-			    1*strftime('%d',date(a.wdate,'weekday 0')),
-			    date(a.wdate,'weekday 0') )
+			    strftime('%Y',date(a.wdate,'weekday 6')),
+			    1*strftime('%m',date(a.wdate,'weekday 6'))-1,
+			    1*strftime('%d',date(a.wdate,'weekday 6')),
+			    date(a.wdate,'weekday 6') )
 
 			select
 				1 as id,
@@ -1091,7 +1094,7 @@ def mphoto(request,photo,pagina):
 	this_photo = TimesMedia.objects.get(pk=int(photo))
 
 	str_embeding = "<img style='width:100%; border:1px solid grey; float:left' src='{}'>".format(this_photo.imagen.url)
-	
+
 	str_embeding2 = "<img style='width:40%; margin-right:1em; margin-top:1em; margin-bottom:1em; border:1px solid grey; float:left' src='{}'>".format(this_photo.imagen.url)
 
 	return render(request,'photo.html',{'this_photo':this_photo,'pagina':n_p,'strI':str_embeding, 'strI2':str_embeding2})
@@ -1901,19 +1904,20 @@ def addcoleccion(request):
 		newC.save()
 
 		return redirect('/page/{}'.format(newC.id))
-		
+
 	return render(request,'add-coleccion.html',{})
 
 def addbooklist(request):
 	if request.method == 'POST':
 		this_titulo = request.POST.get("title")
 		this_desc = request.POST.get("info")
+		this_tipo = request.POST.get("tipo")
 
-		newC = BookList.objects.create(listname = this_titulo, listinfo=this_desc)
+		newC = BookList.objects.create(listname = this_titulo, listinfo=this_desc,tipo = this_tipo)
 		newC.save()
 
 		return redirect('/booklist/{}'.format(newC.id))
-		
+
 	return render(request,'add-book-coleccion.html',{})
 
 

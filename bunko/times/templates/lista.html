@@ -47,7 +47,7 @@
         {% for l in this_books %}
           <li class="list-group-item">
           {% if l.bbook.last_read > this_lista.date_created %}&#9989;{%else%}&#11036;{%endif%} <a href="{% url 'book' l.bbook.id %}" style="color:black; text-decoration: none;">
-          &nbsp;{{l.bbook.titulo}}</a>&nbsp;|&nbsp;{{l.bbook.authors_links|safe}}
+          &nbsp;{{l.bbook.titulo}}</a>&nbsp;{% if this_lista.tipo == 0 %}|&nbsp;{{l.bbook.authors_links|safe}}{% endif %}
           </li>
         {% endfor %}
       </ul>

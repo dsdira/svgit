@@ -360,6 +360,7 @@ class BookList(models.Model):
 	listname = models.CharField(max_length=500)
 	date_created = models.DateField(auto_now=True)
 	listinfo = models.TextField()
+	tipo = models.IntegerField(default=0)
 
 	def __str__(self):
 		return self.listname
