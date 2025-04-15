@@ -70,7 +70,12 @@ class Wiki(models.Model):
 			return ppic.imagen.url
 	@property
 	def mdOutput(self):
-		return(markdown.markdown(self.info,extensions=['extra']))
+		n_corte = self.info.find('==headtext==')
+		if n_corte == -1:
+			this_texto = self.info
+		else:
+			this_texto = self.info.replace('==headtext==','')
+		return(markdown.markdown(this_texto,extensions=['extra']))
 
 
 class Book(models.Model):
@@ -837,6 +842,7 @@ class BookEntity(models.Model):
 
 	def __str__(self):
 		return self.nombre
+
 
 
 
