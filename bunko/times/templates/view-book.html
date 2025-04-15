@@ -17,7 +17,7 @@
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
   	<br>
   	<article class="blog-post">
-	<h4>{{this_book.titulo}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_book.wtype.category|capfirst}} | {{this_book.authors_links|safe}} | <a href="{% url 'addbookentity' this_book.id %}" style="text-decoration: none; color:gray;">Add Ent</a></small></h4>
+	<h4>{{this_book.titulo}}<br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_book.wtype.category|capfirst}} | {{this_book.authors_links|safe}} | <a href="{% url 'addbookentity' this_book.id %}" style="text-decoration: none; color:gray;">Add Ent</a></small></h4>
 
 	{% if barras %}
 		{%for b in barras%}
@@ -62,7 +62,7 @@
 			{% for a in relw %}
 
 			          <h5 class="card-title"><a href='{% url "editwiki" a.mwiki.id  %}' style="text-decoration: none;">{{a.mwiki.title}}</a></h5>
-			          {{a.mwiki.cleantext|safe|linebreaks}}
+			          {{a.mwiki.mdOutput|safe}}
 			          <div style='clear:both;'></div>
 			          <hr>
 

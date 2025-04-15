@@ -21,7 +21,7 @@
 
 		 {% if this_wiki.mainPic %}<img src="{{this_wiki.mainPic}}" style="border:1px solid grey; float:right; width:40%; margin-left: 16px; margin-bottom: 16px;">{% endif %}
 
-		{{this_wiki.cleantext|safe|linebreaks}}
+		{{this_wiki.mdOutput|safe}}
 
 		<div style="clear:both;"></div>
 

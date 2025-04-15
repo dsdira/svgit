@@ -975,13 +975,16 @@ def savemovieduel(request,l,r,w):
 
 def quemarlibro(request,libro):
 
-	libro = Movie.objects.get(pk=int(libro))
-	conteo_2 = MovieWatch.objects.create(film = libro, wdate='1999-12-31')
+	libro = Book.objects.get(pk=int(libro))
+
+	fecha_r = '2025-04-10'
+
+	conteo_2 = Consumo.objects.create(volume = libro, pages=180,start_d=fecha_r,finish_d=fecha_r)
 	conteo_2.save()
 
 
 
-	return redirect('/mqueue')
+	return redirect('/booklists')
 
 
 def moviedbImport(request):

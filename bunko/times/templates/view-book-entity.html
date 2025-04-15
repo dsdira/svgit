@@ -1,6 +1,6 @@
 {% extends 'base_listing.html' %}
 
-{% block titulo %}{{this_wiki.title}}{% endblock %}
+{% block titulo %}{{this_book.title}}{% endblock %}
 
 {% block contenido %}
 
@@ -62,7 +62,7 @@
 			{% for a in relw %}
 
 			          <h5 class="card-title"><a href='{% url "editwiki" a.mwiki.id  %}' style="text-decoration: none;">{{a.mwiki.title}}</a></h5>
-			          {{a.mwiki.cleantext|safe|linebreaks}}
+			          {{a.mwiki.mdOutput|safe}}
 			          <div style='clear:both;'></div>
 			          <hr>
 

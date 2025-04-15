@@ -8,6 +8,7 @@ from django.db.models import Q, Avg, Count, Min, Sum
 from random import choice
 from django.utils.timezone import now
 import re
+import markdown
 
 def path_and_name(instance, filename):
     upload_to = 'wiki_media'
@@ -67,6 +68,9 @@ class Wiki(models.Model):
 			random_pk = choice(pks)
 			ppic = WikiPhoto.objects.get(pk=random_pk)
 			return ppic.imagen.url
+	@property
+	def mdOutput(self):
+		return(markdown.markdown(self.info,extensions=['extra']))
 
 
 class Book(models.Model):
