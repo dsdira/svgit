@@ -92,9 +92,10 @@ def addPagina(request):
 	cat_id = int(request.POST.get("cat_id"))
 	this_titulo = request.POST.get("titulo")
 	this_contenido = request.POST.get("info")
+	fecha_hoy = request.POST.get("fecha_hoy")
 	this_categoria = CategoriaSB.objects.get(pk=cat_id)
 
-	newP = PaginaSB.objects.create(titulo = this_titulo, contenido = this_contenido, categoria = this_categoria)
+	newP = PaginaSB.objects.create(titulo = this_titulo, contenido = this_contenido, categoria = this_categoria, fecha_inicio = fecha_hoy)
 	newP.save()
 
 	if newP.categoria.nombre_categoria == 'book':

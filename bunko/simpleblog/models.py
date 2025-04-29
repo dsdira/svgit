@@ -20,6 +20,7 @@ class PaginaSB(models.Model):
 	titulo = models.CharField(max_length=255)
 	contenido = models.TextField()
 	fecha_creacion = models.DateTimeField(auto_now=True,editable=False)
+	fecha_inicio = models.DateField(default='2025-04-29')
 	categoria = models.ForeignKey(CategoriaSB, on_delete = models.CASCADE)
 
 	@property
