@@ -149,6 +149,10 @@ class Book(models.Model):
 			ppic = BookMedia.objects.get(pk=random_pk)
 			return ppic.imagen.url
 
+	@property
+	def legacyRead(self):
+		return RelBookList.objects.filter(bbook__id=self.id,blist__id=28).count()
+
 
 class CreditType(models.Model):
 	credit_type = models.CharField(max_length=255)
@@ -823,7 +827,7 @@ class Tweet(models.Model):
 
 		return this_tags
 
-	
+
 	def __str__(self):
 		return self.texto[0:40]
 
@@ -842,6 +846,9 @@ class BookEntity(models.Model):
 
 	def __str__(self):
 		return self.nombre
+
+
+
 
 
 

@@ -141,8 +141,13 @@ def addbook(request):
 		autor = Wiki.objects.get(pk=int(request.POST.get("autor")))
 		btype = WikiType.objects.get(pk=int(request.POST.get("btype")))
 		btitle = request.POST.get("title")
-		binfo = request.POST.get("info")
 		pubyear = int(request.POST.get("pub_year"))
+
+		if request.POST.get("info","") == "":
+		    binfo = f"{btitle} is a book written by {autor.title} published in {pubyear}."
+		else:
+		    binfo = request.POST.get("info","")
+
 		origlan = request.POST.get("orig_lan")
 
 		newB = Book.objects.create(title = btitle,orig_lan = origlan,info=binfo, pub_year=pubyear, wtype=btype)
@@ -515,7 +520,7 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (9,10)
+			    c.wtype_id in (9,10) and a.fecha >= '2025-04-01'
 			group by
 			      strftime('%Y',date(fecha,'weekday 6')) ,
 			      1*strftime('%m',date(fecha,'weekday 6')) -1,
@@ -542,7 +547,7 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (11,12)
+			    c.wtype_id in (11,12) and a.fecha >= '2025-04-01'
 			group by
 			      strftime('%Y',date(fecha,'weekday 6')) ,
 			      1*strftime('%m',date(fecha,'weekday 6')) -1,

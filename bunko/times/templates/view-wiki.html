@@ -35,7 +35,7 @@
 		  <ul class="list-group">
         {% for l in creditos %}
           <li class="list-group-item">
-            {% if l.rhist > 0 %}&#9989;{%else%}&#11036;{%endif%} <a href="{% url 'book' l.id %}" style="color:black; text-decoration: none;"> {{l.titulo}}</a>
+            {% if l.rhist > 0 %}&#9989;{% elif l.legacyRead > 0 %}<span style='color:gray;'>&#9949;</span>{% else %}&#11036;{%endif%} <a href="{% url 'book' l.id %}" style="color:black; text-decoration: none;"> {{l.titulo}}</a>
           </li>
         {% endfor %}
       </ul>
