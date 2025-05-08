@@ -17,7 +17,7 @@
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
   	<br>
   	<article class="blog-post">
-		<h4>{{this_wiki.title}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_wiki.wtype.category|capfirst}} | {{this_wiki.updated_at|date:"M j, Y"}}</small></h4>
+		<h4>{{this_wiki.title}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_wiki.wtype.category|capfirst}} {{this_wiki.onbookcomm|safe}} | {{this_wiki.updated_at|date:"M j, Y"}}</small></h4>
 
         {% if this_wiki.mainPic %}<img src="{{this_wiki.mainPic}}" style="border:1px solid grey; float:left; width:40%; margin-right: 16px; margin-bottom: 16px;">{% endif %}
         {% if creditos %}

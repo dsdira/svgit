@@ -109,6 +109,8 @@ urlpatterns = [
 	path('addbooktolist2/<book>/<lista>',views.addbooktolist2,name='addbooktolist2'),
 	path('addbookentity/<book_id>',views.addbookentity,name='addbookentity'),
 	path('viewentity/<ent_id>',views.viewentity,name='viewentity'),
+	path('addwikibook/<book_id>',views.addwikibook,name='addwikibook'),
+	path('editbookinfo/<book_id>',views.editbookinfo,name='editbookinfo'),
 	
 
 	]

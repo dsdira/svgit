@@ -121,7 +121,7 @@ def homepage(request):
 	nlist = 16
 	npics = Wiki.objects.all().count()
 	npages = math.ceil(npics/nlist)
-	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8,19]).exclude(id=180).order_by('-updated_at')[0:nlist]
+	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8]).exclude(id=180).order_by('-updated_at')[0:nlist]
 	pinned_posts = Wiki.objects.filter(id=180)
 	on_reading = ProgressBar.objects.filter(avance__lt=F('cantidad'))
 	now_watching = SeasonProgressBar.objects.filter(avance__lt=F('temporada__episodes'))
@@ -520,7 +520,7 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (9,10) and a.fecha >= '2025-04-01'
+			    c.wtype_id in (9) and a.fecha >= '2025-04-01'
 			group by
 			      strftime('%Y',date(fecha,'weekday 6')) ,
 			      1*strftime('%m',date(fecha,'weekday 6')) -1,
@@ -547,7 +547,7 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (11,12) and a.fecha >= '2025-04-01'
+			    c.wtype_id in (11) and a.fecha >= '2025-04-01'
 			group by
 			      strftime('%Y',date(fecha,'weekday 6')) ,
 			      1*strftime('%m',date(fecha,'weekday 6')) -1,
@@ -1964,5 +1964,24 @@ def viewentity(request,ent_id):
 		this_entity.save()
 
 	return render(request,'view-single-entity.html',{'this_entity':this_entity,'entidades':entidades})
+
+
+def addwikibook(request,book_id):
+	this_book = Book.objects.get(pk=int(book_id))
+
+	return render(request,'add-wiki-book.html',{'this_book':this_book})
+
+
+def editbookinfo(request,book_id):
+	this_book = Book.objects.get(pk=int(book_id))
+
+	if request.method == 'POST':
+		this_book.title = request.POST.get("title")
+		this_book.info = request.POST.get("info")
+		this_book.save()
+
+		return redirect(f'/book/{this_book.id}')
+	else:
+		return render(request,'edit-book-info.html',{'this_book':this_book})
 
 

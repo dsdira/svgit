@@ -77,6 +77,17 @@ class Wiki(models.Model):
 			this_texto = self.info.replace('==headtext==','')
 		return(markdown.markdown(this_texto,extensions=['extra']))
 
+	@property
+	def onbookcomm(self):
+		conteo = MediaWiki.objects.filter(media_type=1,mwiki=self).count()
+
+		if conteo == 0:
+			return ""
+		else:
+			this_mediawiki = MediaWiki.objects.filter(media_type=1,mwiki=self).latest('id')
+			this_book = Book.objects.get(pk=int(this_mediawiki.media_id))
+			return " on <a href='/book/" + str(this_book.id) + "' style='text-decoration:none;'>"+this_book.titulo+"</a> "
+
 
 class Book(models.Model):
 	title = models.CharField(max_length=512)
@@ -152,6 +163,8 @@ class Book(models.Model):
 	@property
 	def legacyRead(self):
 		return RelBookList.objects.filter(bbook__id=self.id,blist__id=28).count()
+
+
 
 
 class CreditType(models.Model):

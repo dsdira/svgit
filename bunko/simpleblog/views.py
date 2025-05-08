@@ -29,7 +29,7 @@ class getPageAttrs:
 
 			for p in paginas:
 				atributos[p.attNombre] = p.attValor.titulo
-		
+
 		if attrTexto.objects.filter(pagina=this_pagina).count() > 0:
 			textos = attrTexto.objects.filter(pagina=this_pagina)
 
@@ -62,7 +62,7 @@ class getPageAttrs:
 
 def adminCategorias(request):
 	ptitulo = "Admin Categorias"
-	categorias = CategoriaSB.objects.all()		
+	categorias = CategoriaSB.objects.all()
 	return render(request,'admin_categorias.html',{'ptitulo':ptitulo,'categorias':categorias})
 
 
@@ -121,7 +121,7 @@ def viewPagina(request,pid):
 		this_pagina.categoria = this_categoria
 		this_pagina.save()
 
-	return render(request,'view_pagina.html',{'ptitulo':this_pagina.titulo,'categorias':categorias,'this_pagina':this_pagina,'cant_att':cant_att, 'atributos':atributos}) 
+	return render(request,'view_pagina.html',{'ptitulo':this_pagina.titulo,'categorias':categorias,'this_pagina':this_pagina,'cant_att':cant_att, 'atributos':atributos})
 
 def addAtributosBook(request,pid):
 	this_pagina = PaginaSB.objects.get(pk=int(pid))
@@ -147,7 +147,7 @@ def saveBookAttr(request):
 	newBA.save()
 
 	orden = orden + 1
-	
+
 	newBA = attrEntero.objects.create(pagina = this_pagina, attNombre='Pub Year', attValor=pub_year, attOrden = orden)
 	newBA.save()
 
@@ -235,24 +235,24 @@ def addRelacionIC(request,c,p):
 
 
 def inicio(request):
-	items = PaginaSB.objects.all().order_by('-fecha_creacion')[0:25]
+	items = PaginaSB.objects.all().order_by('-fecha_inicio')[0:25]
 	ptitulo = 'Home - Simple Blog'
 	colecciones = ItemColeccion.objects.all().order_by('id')[0:30]
 	if request.method == 'POST':
 		items = PaginaSB.objects.filter(titulo__contains=request.POST.get("kw")).order_by('-id')
-		
+
 	return render(request,'simple-blog.html',{'ptitulo':ptitulo,'items':items,'colecciones':colecciones})
 
 
 def categoria(request,c):
-	items = PaginaSB.objects.filter(categoria__id=int(c)).order_by('-fecha_creacion')	
+	items = PaginaSB.objects.filter(categoria__id=int(c)).order_by('-fecha_creacion')
 
 	this_categoria = CategoriaSB.objects.get(pk=int(c))
 	ptitulo = 'Home - Simple Blog'
 	colecciones = ItemColeccion.objects.all().order_by('id')[0:30]
 	if request.method == 'POST':
 		items = PaginaSB.objects.filter(titulo__contains=request.POST.get("kw"), categoria__id=int(c)).order_by('-id')
-		
+
 	return render(request,'categoria.html',{'ptitulo':ptitulo,'items':items,'colecciones':colecciones,'this_categoria':this_categoria})
 
 
@@ -264,7 +264,7 @@ def sbcoleccion(request,c):
 	colecciones = ItemColeccion.objects.all().order_by('id')[0:30]
 	if request.method == 'POST':
 		items = RelacionIC.objects.filter(pagina__titulo__contains=request.POST.get("kw")).order_by('-id')
-		
+
 	return render(request,'sbcoleccion.html',{'ptitulo':ptitulo,'items':items,'colecciones':colecciones,'this_coleccion':this_coleccion})
 
 
@@ -276,7 +276,7 @@ def epubGen(request,c):
 	colecciones = ItemColeccion.objects.all().order_by('id')[0:30]
 	if request.method == 'POST':
 		items = RelacionIC.objects.filter(pagina__titulo__contains=request.POST.get("kw")).order_by('-id')
-		
+
 	return render(request,'epubgen.html',{'ptitulo':ptitulo,'items':items,'colecciones':colecciones,'this_coleccion':this_coleccion})
 
 

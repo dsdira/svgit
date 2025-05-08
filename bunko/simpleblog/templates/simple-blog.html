@@ -6,6 +6,7 @@
 {% block contenido %}
   {% for i in items %}
     <h5><a href="{% url 'blog' i.id %}" style="text-decoration: none;">{{i.titulo}}</a> <a href="{% url 'categoria' i.categoria.id %}" style="text-decoration:none; color:grey;">({{i.categoria.nombre_categoria}})</a></h5>
+    <p style="color:grey; margin-bottom:2px;">{{i.fecha_inicio}}</p>
     {{i.headtext}}
     <hr>
   {% endfor %}
