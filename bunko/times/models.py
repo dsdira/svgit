@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from datetime import date
 from django.db import models
 from django.utils import timezone
 import os
@@ -812,7 +813,8 @@ class ApunteConsumo(models.Model):
 
 class Tweet(models.Model):
 	texto = models.TextField()
-	created_at = models.DateTimeField(auto_now=True,editable=False)
+	updated_at = models.DateTimeField(auto_now=True,editable=False)
+	created_at = models.DateField(default=date.today)
 
 	@property
 	def cleantext(self):

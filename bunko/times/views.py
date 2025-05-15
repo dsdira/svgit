@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
 from django import template
 from .models import *
 from django.db.models import Avg, Count, Min, Sum
@@ -75,7 +76,7 @@ def editwiki(request,wikiid):
 		this_cat = WikiType.objects.get(pk=int(request.POST.get("cat_id")))
 		this_titulo = request.POST.get("title")
 		this_info = request.POST.get("info")
-		Wiki.objects.filter(id=int(wikiid)).update(wtype=this_cat,title=this_titulo,info=this_info,updated_at=datetime.now())
+		Wiki.objects.filter(id=int(wikiid)).update(wtype=this_cat,title=this_titulo,info=this_info)
 
 		if relbook:
 		    return redirect('/book/{}'.format(relbook.media_id))
@@ -118,19 +119,26 @@ def wiki(request,wid):
 	return render(request,'view-wiki.html',{'this_wiki':this_wiki,'paginas':collection,'wtypes':wtypes,'creditos':rel_books})
 
 def homepage(request):
-	nlist = 16
-	npics = Wiki.objects.all().count()
-	npages = math.ceil(npics/nlist)
-	articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8]).exclude(id=180).order_by('-updated_at')[0:nlist]
-	pinned_posts = Wiki.objects.filter(id=180)
-	on_reading = ProgressBar.objects.filter(avance__lt=F('cantidad'))
-	now_watching = SeasonProgressBar.objects.filter(avance__lt=F('temporada__episodes'))
+    page = request.GET.get('page', 1)
+    nlist = 16
+    npics = Wiki.objects.all().count()
+    npages = math.ceil(npics/nlist)
+    articles = Wiki.objects.all().exclude(wtype__id__in=[1,2,3,4,5,8]).exclude(id=180).order_by('-updated_at')
+    paginator = Paginator(articles, 12)
+    resultados = paginator.get_page(page)
+    pinned_posts = Wiki.objects.filter(id=180)
+    on_reading = ProgressBar.objects.filter(avance__lt=F('cantidad'))
+    now_watching = SeasonProgressBar.objects.filter(avance__lt=F('temporada__episodes'))
 
-	authors = Credito.objects.filter(ctype__id=1,media_type=1).exclude(persona__id__in = [36,40]).values('persona__title','persona__id').annotate(qbooks=Count('media_id')).order_by('-qbooks')
+    if int(page) > 1:
+        on_reading = None
+        now_watching = None
 
-	dpaginas = PageRels.objects.values('page__titulo','page__id').annotate(qitems = Count('page__id'), lastup=Max('child__updated_at')).order_by('-lastup')[0:50]
+    authors = Credito.objects.filter(ctype__id=1,media_type=1).exclude(persona__id__in = [36,40]).values('persona__title','persona__id').annotate(qbooks=Count('media_id')).order_by('-qbooks')
 
-	return render(request,'homepage.html',{'articles':articles,'pinned_posts':pinned_posts,'dpaginas':dpaginas,'npages':range(npages),'on_reading':on_reading,'now_watching':now_watching	,'authors':authors})
+    dpaginas = PageRels.objects.values('page__titulo','page__id').annotate(qitems = Count('page__id'), lastup=Max('child__updated_at')).order_by('-lastup')[0:50]
+
+    return render(request,'homepage.html',{'articles':resultados,'pinned_posts':pinned_posts,'dpaginas':dpaginas,'npages':range(npages),'on_reading':on_reading,'now_watching':now_watching	,'authors':authors,'npage':int(page)})
 
 def addbook(request):
 	personas = Wiki.objects.filter(wtype__category='persona').order_by('title')
@@ -509,9 +517,9 @@ def statistics(request):
 	paginas = ProgressLog.objects.raw("""
 			select
 			    1 as id,
-			     strftime('%Y',date(fecha,'weekday 6')) as anho,
-			      1*strftime('%m',date(fecha,'weekday 6'))-1 as mes,
-			       1*strftime('%d',date(fecha,'weekday 6')) as dia,
+			     strftime('%Y',date(fecha,'weekday 0')) as anho,
+			      1*strftime('%m',date(fecha,'weekday 0'))-1 as mes,
+			       1*strftime('%d',date(fecha,'weekday 0')) as dia,
 			    sum(delta_lec) as paginas
 			from
 			    times_progresslog a
@@ -520,11 +528,11 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (9) and a.fecha >= '2025-04-01'
+			    c.wtype_id in (9) and a.fecha >= '2025-05-19'
 			group by
-			      strftime('%Y',date(fecha,'weekday 6')) ,
-			      1*strftime('%m',date(fecha,'weekday 6')) -1,
-			       1*strftime('%d',date(fecha,'weekday 6'))
+			      strftime('%Y',date(fecha,'weekday 0')) ,
+			      1*strftime('%m',date(fecha,'weekday 0')) -1,
+			       1*strftime('%d',date(fecha,'weekday 0'))
 
 						    """)
 	data_points = "["
@@ -535,9 +543,9 @@ def statistics(request):
 	capitulos = ProgressLog.objects.raw("""
 			select
 			    1 as id,
-			     strftime('%Y',date(fecha,'weekday 6')) as anho,
-			      1*strftime('%m',date(fecha,'weekday 6'))-1 as mes,
-			       1*strftime('%d',date(fecha,'weekday 6')) as dia,
+			     strftime('%Y',date(fecha,'weekday 0')) as anho,
+			      1*strftime('%m',date(fecha,'weekday 0'))-1 as mes,
+			       1*strftime('%d',date(fecha,'weekday 0')) as dia,
 			    sum(delta_lec) as paginas ,
 			    date(fecha,'weekday 6') fecha
 			from
@@ -547,11 +555,11 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (11) and a.fecha >= '2025-04-01'
+			    c.wtype_id in (11) and a.fecha >= '2025-05-19'
 			group by
-			      strftime('%Y',date(fecha,'weekday 6')) ,
-			      1*strftime('%m',date(fecha,'weekday 6')) -1,
-			       1*strftime('%d',date(fecha,'weekday 6')),
+			      strftime('%Y',date(fecha,'weekday 0')) ,
+			      1*strftime('%m',date(fecha,'weekday 0')) -1,
+			       1*strftime('%d',date(fecha,'weekday 0')),
 			       date(fecha,'weekday 6') order by date(fecha,'weekday 6') desc
 						    """)
 	data_points2 = "["
@@ -606,9 +614,10 @@ def addfilmmedia(request):
 
 def savepost(request):
 	entry = request.POST.get("entrada")
+	created_at = request.POST.get("fecha")
 
 
-	newT = Tweet.objects.create(texto = entry)
+	newT = Tweet.objects.create(texto = entry, created_at=created_at)
 	newT.save()
 
 	pat = re.compile(r"#(\w+)")
@@ -620,6 +629,17 @@ def savepost(request):
 			newE = Etiqueta.objects.create(tweet=newT, etiqueta=l)
 
 	return redirect('/journal/1')
+
+def editTweet(request,tweet_id):
+	this_tweet = Tweet.objects.get(pk=int(tweet_id))
+	msg = 0
+
+	if request.method == 'POST':
+		this_tweet.texto = request.POST.get("info")
+		this_tweet.save()
+		msg=1
+	return render(request,'edit-tweet.html',{'this_tweet':this_tweet,'codigo':msg})
+	
 
 def journal(request,y):
 	max_year = Tweet.objects.order_by('-created_at').first()

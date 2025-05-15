@@ -30,7 +30,7 @@
         {% for a in posts %}
           <li class="list-group-item">
           	{{a.cleantext|safe}} {{a.hashtags|safe}} <br>
-            <span style="color:grey; font-size:  0.75em;"><i>{{a.created_at|date:"N j"}}</span> <a href="{% url 'wiki' a.id %}" style='color:white; font-size:  0.75em;' onmouseover="this.style.color='blue'; " onmouseout="this.style.color='white';">#{{a.id}}</a></i><br>
+            <span style="color:grey; font-size:  0.75em;"><i>{{a.created_at|date:"N j"}}</span> <a href="{% url 'editTweet' a.id %}" style='color:white; font-size:  0.75em;' onmouseover="this.style.color='blue'; " onmouseout="this.style.color='white';">#{{a.id}}</a></i><br>
           </li>
         {% endfor %}
       </ul>

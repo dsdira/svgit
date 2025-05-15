@@ -111,6 +111,7 @@ urlpatterns = [
 	path('viewentity/<ent_id>',views.viewentity,name='viewentity'),
 	path('addwikibook/<book_id>',views.addwikibook,name='addwikibook'),
 	path('editbookinfo/<book_id>',views.editbookinfo,name='editbookinfo'),
+	path('edit-tweet/<tweet_id>',views.editTweet,name='editTweet'),
 	
 
 	]

@@ -6,6 +6,7 @@
 {% block contenido %}
 
 <script src="{% static 'js/masonry.pkgd.min.js' %}" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+{%if npage == 1 %}
 <article>
     <form method="POST" action="{% url 'savepost' %}">
       {% csrf_token %}
@@ -26,6 +27,8 @@
     </form>
 </article>
 <br>
+{%endif%}
+
 
 <div class="row" data-masonry='{"percentPosition": true }'>
   {% if on_reading %}
@@ -70,13 +73,28 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title"><a href='{% url "wiki" a.id  %}' style="text-decoration: none;">{{a.title}}</a>
-          	<br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{a.wtype.category|capfirst}} {{a.onbookcomm|safe}}| {{a.updated_at|date:"M j, Y"}}</small></h5>
+          	<br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{a.wtype.category|capfirst}} {{a.onbookcomm|safe}}| {{a.created_at|date:"M j, Y"}}</small></h5>
           <p class="card-text">{{a.headtext}}</p>
         </div>
       </div>
        </div>
 {% endfor %}
 </div>
+
+<nav aria-label="Page navigation example">
+     <ul class="pagination">
+    {% if articles.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ articles.previous_page_number }}">Previous</a></li>
+    {% endif %}
+
+    <li class="page-item"><span class="page-link">Page {{ articles.number }} of {{ articles.paginator.num_pages }}</span> </li>
+
+    {% if articles.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ articles.next_page_number }}">Next</a></li>
+    {% endif %}
+    </ul>
+</nav>
+
 
 
 
