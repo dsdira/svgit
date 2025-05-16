@@ -201,7 +201,22 @@ def book(request,bookid):
 	related_wikis = MediaWiki.objects.filter(media_type=1, media_id=this_book.id).order_by('id')
 	listas = BookList.objects.all().order_by('listname')
 
-	conteo_be = BookEntity.objects.filter(libro__id=this_book.id).count()
+	this_book_series = RelBookList.objects.filter(bbook=this_book,blist__tipo__in=[1,2,3])
+
+	get_books = None
+
+	series_libros = [this_book.id]
+
+	tb_series = []
+	if this_book_series:
+		for bs in this_book_series:
+			tb_series.append(bs.blist.id)
+		if len(tb_series)>0:
+			get_books =  RelBookList.objects.filter(blist__id__in=tb_series).exclude(bbook__id=this_book.id).values_list('bbook__id').distinct()
+			for i in get_books:
+				series_libros.append(i[0])
+
+	conteo_be = BookEntity.objects.filter(libro__id__in=series_libros).count()
 
 	citas = BookQuote.objects.filter(libro=this_book).order_by('id')
 
@@ -210,10 +225,10 @@ def book(request,bookid):
 	btags = BookTag.objects.filter(libro__id=this_book.id)
 
 	if conteo_be > 0:
-		entidades = BookEntity.objects.filter(libro__id=this_book.id).order_by('id')
-		return render(request,'view-book-entity.html',{'this_book':this_book,'entidades':entidades,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas})
+		entidades = BookEntity.objects.filter(libro__id__in=series_libros).order_by('-importancia','-id')
+		return render(request,'view-book-entity.html',{'this_book':this_book,'entidades':entidades,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas,'tb_series':series_libros})
 	else:
-		return render(request,'view-book.html',{'this_book':this_book,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas})
+		return render(request,'view-book.html',{'this_book':this_book,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas,'tb_series':series_libros})
 
 def books(request,y):
 	max_year = Consumo.objects.order_by('-finish_d').first()
@@ -528,7 +543,7 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (9) and a.fecha >= '2025-05-19'
+			    c.wtype_id in (9,10) and a.fecha >= '2025-05-19'
 			group by
 			      strftime('%Y',date(fecha,'weekday 0')) ,
 			      1*strftime('%m',date(fecha,'weekday 0')) -1,
@@ -639,7 +654,7 @@ def editTweet(request,tweet_id):
 		this_tweet.save()
 		msg=1
 	return render(request,'edit-tweet.html',{'this_tweet':this_tweet,'codigo':msg})
-	
+
 
 def journal(request,y):
 	max_year = Tweet.objects.order_by('-created_at').first()
@@ -1969,7 +1984,7 @@ def addbookentity(request,book_id):
 	wtypes = ["character","place","event","object","battle"]
 
 	if request.method == 'POST':
-		newBE = BookEntity.objects.create(libro=this_book,etype=request.POST.get("etype"),nombre=request.POST.get("nombre"),info=request.POST.get("info"))
+		newBE = BookEntity.objects.create(libro=this_book,etype=request.POST.get("etype"),nombre=request.POST.get("nombre"),info=request.POST.get("info"), importancia=int(request.POST.get("importancia")))
 		newBE.save()
 		return redirect('/book/{}'.format(this_book.id))
 
@@ -1977,13 +1992,34 @@ def addbookentity(request,book_id):
 
 def viewentity(request,ent_id):
 	this_entity = BookEntity.objects.get(pk=int(ent_id))
-	entidades = BookEntity.objects.filter(libro__id=this_entity.libro.id).order_by('id')
+	
+	this_book_series = RelBookList.objects.filter(bbook=this_entity.libro,blist__tipo__in=[1,2,3])
+
+	get_books = None
+
+	series_libros = [this_entity.libro.id]
+
+	tb_series = []
+	if this_book_series:
+		for bs in this_book_series:
+			tb_series.append(bs.blist.id)
+		if len(tb_series)>0:
+			get_books =  RelBookList.objects.filter(blist__id__in=tb_series).exclude(bbook__id=this_entity.libro.id).values_list('bbook__id').distinct()
+			for i in get_books:
+				series_libros.append(i[0])
+
+	entidades = BookEntity.objects.filter(libro__id__in=series_libros).order_by('-importancia','id')
+
+	otros_libros = Book.objects.filter(id__in=series_libros).order_by('id')
+
+	ent_groups = BookEntityGroup.objects.all().order_by('groupname')
 
 	if request.method == 'POST':
 		this_entity.info = request.POST.get("info")
+		this_entity.importancia = int(request.POST.get("importancia"))
 		this_entity.save()
 
-	return render(request,'view-single-entity.html',{'this_entity':this_entity,'entidades':entidades})
+	return render(request,'view-single-entity.html',{'this_entity':this_entity,'entidades':entidades,'otros_libros':otros_libros,'ent_groups':ent_groups})
 
 
 def addwikibook(request,book_id):
@@ -2003,5 +2039,36 @@ def editbookinfo(request,book_id):
 		return redirect(f'/book/{this_book.id}')
 	else:
 		return render(request,'edit-book-info.html',{'this_book':this_book})
+
+def createEntityGroup(request):
+	nombre = request.POST.get("nombre")
+	info = request.POST.get("info")
+
+	newEBG = BookEntityGroup.objects.create(groupname=nombre, groupinfo=info)
+	newEBG.save()
+
+	return redirect('/viewentity/{}'.format(request.POST.get("entity_id")))
+
+def addEntityToGroup(request):
+	grupo = int(request.POST.get("cat_id"))
+	entidad = (request.POST.get("entity_id"))
+
+	this_group = BookEntityGroup.objects.get(pk=grupo)
+	this_entidad = BookEntity.objects.get(pk=entidad)
+
+	newGG = BookGroupEntity.objects.create(entity = this_entidad, grupo = this_group)
+	newGG.save()
+	
+
+	return redirect('/viewentity/{}'.format(request.POST.get("entity_id")))
+
+
+def viewEntityGroup(request,grupo_id):
+
+	this_grupo = BookEntityGroup.objects.get(pk=int(grupo_id))
+	this_entidades = BookGroupEntity.objects.filter(grupo=this_grupo).order_by('-entity__importancia','entity__id')
+	all_groups = BookEntityGroup.objects.all().order_by('groupname')
+
+	return render(request,'view-entity-group.html',{'this_grupo':this_grupo,'this_entidades':this_entidades,'all_grupos':all_groups})
 
 

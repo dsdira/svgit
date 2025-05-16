@@ -55,6 +55,9 @@ admin.site.register(ApunteConsumo)
 admin.site.register(Tweet)
 admin.site.register(Etiqueta)
 admin.site.register(BookEntity)
+admin.site.register(BookEntityGroup)
+
+admin.site.register(BookGroupEntity)
 
 
 

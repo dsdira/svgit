@@ -17,11 +17,16 @@
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
   	<br>
   	<article class="blog-post">
-	<h4>{{this_entity.nombre}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_entity.etype|capfirst}}</small></h4>
+	<h4>{{this_entity.nombre}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_entity.etype|capfirst}} {{this_entity.afiliations|safe}}</small></h4>
 
 	{{this_entity.info|linebreaks|safe}}
 
-	<p>Back to <a href="{% url 'book' this_entity.libro.id %}" style="text-decoration:none;">{{this_entity.libro.titulo}} </a>
+	<p>Back to:
+    {% if otros_libros %}
+    {% for b in otros_libros %}
+    <br> <a href="{% url 'book' b.id %}" style="text-decoration:none;">{{b.titulo}} </a>
+    {% endfor %}
+    {% endif %}
 
 	<div style="clear:both;"></div>
 
@@ -44,6 +49,11 @@
 	    <textarea name = "info" class="form-control" id="exampleFormControlTextarea1" rows="12">{{this_entity.info}}</textarea>
 	  </div>
 
+    <div class="form-group">
+      <label for="exampleFormControlInput1">Importancia</label>
+      <input type = "text" name="importancia" value="{{this_entity.importancia}}" width="25" class="form-control" id="exampleFormControlInput1">
+    </div>
+
     <div class="form-group col-sm-6 col-lg-3 mb-3">
         <label for="exampleFormControlInput1">&nbsp;&nbsp;</label>
 	    <button type="submit" class="btn btn-primary" style="width:100%">Save Changes</button>
@@ -51,7 +61,60 @@
 
     </form>
     <br>
+
+  <hr>
+
+    <h5>Add to group</h5>
+    <form method="POST" action="{% url 'addEntityToGroup' %}">
+      {% csrf_token %}
+
+     <div class="form-group">
+      <label for="exampleFormControlSelect1">Group</label>
+      <select class="form-control" name="cat_id" id="exampleFormControlSelect1">
+        {% for e in ent_groups %}
+            <option value = "{{e.id}}">{{e.groupname}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <br>
+   <input type="hidden" name="entity_id" value="{{this_entity.id}}">
+    <div class="form-group col-sm-6 col-lg-3 mb-3">
+      <button type="submit" class="btn btn-primary" style="width:100%">Add to group</button>
+    </div>
+    </form>
+    <br>
+
+
+    <hr>
+
+    <h5>Add New Group</h5>
+
+  <form method="POST" action="{% url 'createEntityGroup' %}">
+      {% csrf_token %}
+      <div class="form-group">
+      <label for="exampleFormControlInput1">Group Name</label>
+      <input type = "text" name="nombre"  class="form-control" id="exampleFormControlInput1">
+    </div>
+    <br>
+      <div class="form-group">
+
+      <textarea name = "info" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+    </div>
+
+    
+    <input type="hidden" name="entity_id" value="{{this_entity.id}}">
+
+    <div class="form-group col-sm-6 col-lg-3 mb-3">
+        <label for="exampleFormControlInput1">&nbsp;&nbsp;</label>
+      <button type="submit" class="btn btn-primary" style="width:100%">Save Changes</button>
+    </div>
+
+    </form>
   </div>
+
+
+
+
 
 
 {% endblock%}

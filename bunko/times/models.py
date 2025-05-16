@@ -858,9 +858,42 @@ class BookEntity(models.Model):
 	etype = models.CharField(max_length=50)
 	nombre = models.CharField(max_length=250)
 	info = models.TextField()
+	importancia = models.IntegerField(default=50)
 
 	def __str__(self):
 		return self.nombre
+
+	@property
+	def afiliations(self):
+		texto_grupos = ""
+		grupos = BookGroupEntity.objects.filter(entity=self)
+		if grupos:
+			for g in grupos:
+				texto_grupos = texto_grupos + "<a href='/entity-group/"+str(g.grupo.id)+"' style='text-decoration:none; color:#6F8FAF;'>"+g.grupo.groupname+"</a>,&nbsp;"
+
+		return " | " +texto_grupos[:-7]
+
+
+
+
+class BookEntityGroup(models.Model):
+	groupname = models.CharField(max_length=512)
+	groupinfo = models.TextField()
+
+	def __str__(self):
+		return self.groupname
+
+class BookGroupEntity(models.Model):
+	entity = models.ForeignKey(BookEntity,on_delete=models.CASCADE)
+	grupo = models.ForeignKey(BookEntityGroup,on_delete=models.CASCADE)
+
+	def __str__(self):
+		return self.entity.nombre + ' @ ' + self.grupo.groupname
+
+
+
+
+
 
 
 

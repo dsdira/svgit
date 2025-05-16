@@ -17,7 +17,8 @@
   <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
   	<br>
   	<article class="blog-post">
-	<h4>{{this_book.titulo}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_book.wtype.category|capfirst}} | {{this_book.authors_links|safe}}</small></h4>
+
+	<h4>{{this_book.titulo}} <br><small class="text-muted" style="font-size: 0.7em; font-weight: normal;">{{this_book.wtype.category|capfirst}} | {{this_book.authors_links|safe}} | <a href="{% url 'addwikibook' this_book.id %}" style="text-decoration: none; color:gray;">Add Wiki</a> | <a href="{% url 'addbookentity' this_book.id %}" style="text-decoration: none; color:gray;">Add Ent</a> | <a href="{% url 'editbookinfo' this_book.id %}" style="text-decoration: none; color:gray;">Edit</a></small></h4>
 
 	{% if barras %}
 		{%for b in barras%}
