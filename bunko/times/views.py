@@ -135,10 +135,10 @@ def homepage(request):
         now_watching = None
 
     authors = Credito.objects.filter(ctype__id=1,media_type=1).exclude(persona__id__in = [36,40]).values('persona__title','persona__id').annotate(qbooks=Count('media_id')).order_by('-qbooks')
-
+    autores = sorted(Wiki.objects.filter(wtype__id=1).all().order_by('title'),key=lambda t: t.nbooks, reverse=True)
     dpaginas = PageRels.objects.values('page__titulo','page__id').annotate(qitems = Count('page__id'), lastup=Max('child__updated_at')).order_by('-lastup')[0:50]
 
-    return render(request,'homepage.html',{'articles':resultados,'pinned_posts':pinned_posts,'dpaginas':dpaginas,'npages':range(npages),'on_reading':on_reading,'now_watching':now_watching	,'authors':authors,'npage':int(page)})
+    return render(request,'homepage.html',{'articles':resultados,'pinned_posts':pinned_posts,'dpaginas':dpaginas,'npages':range(npages),'on_reading':on_reading,'now_watching':now_watching	,'authors':autores,'npage':int(page)})
 
 def addbook(request):
 	personas = Wiki.objects.filter(wtype__category='persona').order_by('title')
@@ -225,7 +225,7 @@ def book(request,bookid):
 	btags = BookTag.objects.filter(libro__id=this_book.id)
 
 	if conteo_be > 0:
-		entidades = BookEntity.objects.filter(libro__id__in=series_libros).order_by('-importancia','-id')
+		entidades = BookEntity.objects.filter(libro__id__in=series_libros).order_by('-importancia','id')
 		return render(request,'view-book-entity.html',{'this_book':this_book,'entidades':entidades,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas,'tb_series':series_libros})
 	else:
 		return render(request,'view-book.html',{'this_book':this_book,'btags':btags,'wtypes':wtypes,'relw':related_wikis,'blistas':listas,'barras':barras,'citas':citas,'tb_series':series_libros})
@@ -543,7 +543,7 @@ def statistics(request):
 			    left join times_book c
 			    on b.libro_id=c.id
 			where
-			    c.wtype_id in (9,10) and a.fecha >= '2025-05-19'
+			    c.wtype_id in (9,10) and a.fecha >= '2025-05-19' and units in ('Printed','Kindle')
 			group by
 			      strftime('%Y',date(fecha,'weekday 0')) ,
 			      1*strftime('%m',date(fecha,'weekday 0')) -1,
@@ -1992,7 +1992,7 @@ def addbookentity(request,book_id):
 
 def viewentity(request,ent_id):
 	this_entity = BookEntity.objects.get(pk=int(ent_id))
-	
+
 	this_book_series = RelBookList.objects.filter(bbook=this_entity.libro,blist__tipo__in=[1,2,3])
 
 	get_books = None
@@ -2058,7 +2058,7 @@ def addEntityToGroup(request):
 
 	newGG = BookGroupEntity.objects.create(entity = this_entidad, grupo = this_group)
 	newGG.save()
-	
+
 
 	return redirect('/viewentity/{}'.format(request.POST.get("entity_id")))
 

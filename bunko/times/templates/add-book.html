@@ -8,17 +8,17 @@
 
 	<form method="POST" enctype="multipart/form-data">
 	  {% csrf_token %}
-	  <div class="form-group">	
+	  <div class="form-group">
 	    <label for="exampleFormControlInput1">Title</label>
-	    <input type = "text" name="title" class="form-control" id="exampleFormControlInput1">
+	    <input type = "text" name="title"  class="form-control" id="exampleFormControlInput1">
 	  </div>
 	  <br>
 	  <div class="row">
-	  <div class="form-group col-sm-4">	
+	  <div class="form-group col-sm-4">
 	    <label for="exampleFormControlInput1">Pub year</label>
 	    <input type = "text" name="pub_year" class="form-control" id="exampleFormControlInput1">
 	  </div>
-	  <div class="form-group col-sm-4">	
+	  <div class="form-group col-sm-4">
 	    <label for="exampleFormControlInput1">Orig Lan</label>
 	    <input type = "text" name="orig_lan" class="form-control" id="exampleFormControlInput1">
 	  </div>
@@ -61,7 +61,7 @@
 	    </select>
 	  </div>
 	  <br>
-	  	 
+
 	  <div class="form-group">
     	<label for="exampleFormControlFile1">Book Cover</label>
     	<input type="file" name = "imagen" class="form-control-file" id="exampleFormControlFile1">

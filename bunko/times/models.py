@@ -88,6 +88,22 @@ class Wiki(models.Model):
 			this_mediawiki = MediaWiki.objects.filter(media_type=1,mwiki=self).latest('id')
 			this_book = Book.objects.get(pk=int(this_mediawiki.media_id))
 			return " on <a href='/book/" + str(this_book.id) + "' style='text-decoration:none;'>"+this_book.titulo+"</a> "
+	@property
+	def nbooks(self):
+		conteo = Credito.objects.filter(ctype__id=1,media_type=1,persona=self).count()
+		return conteo
+
+	@property
+	def readbooks(self):
+		conteo_all = Credito.objects.filter(ctype__id=1,media_type=1,persona=self).count()
+		if conteo_all > 0:
+			pks = Credito.objects.filter(ctype__id=1,media_type=1,persona=self).values_list('media_id', flat=True)
+			distinct_count = Consumo.objects.filter(volume__id__in=pks,finish_d__isnull=False).values('volume__id').annotate(count=Count('volume__id', distinct=True)).count()
+			return distinct_count
+		else:
+			return 0
+
+		
 
 
 class Book(models.Model):
@@ -180,7 +196,7 @@ class Credito(models.Model):
 	media_id = models.IntegerField()
 
 	def __str__(self):
-		return self.persona.title
+		return self.persona.title +' @ '+ self.ctype.credit_type
 
 class Movie(models.Model):
 	title = models.CharField(max_length=512)
